@@ -1,0 +1,31 @@
+{
+  "scripts": {
+    "test": "npx playwright test",
+    "test:ui": "npx playwright test --project=chromium",
+    "test:api": "npx playwright test tests/api/",
+    "test:e2e": "npx playwright test tests/e2e/",
+    "test:mobile": "npx playwright test --project='mobile-chrome' --project='mobile-safari'",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:parallel": "npx playwright test --workers=4",
+    "test:smoke": "npx playwright test --grep @smoke",
+    "test:regression": "npx playwright test --grep @regression",
+    "test:visual": "npx playwright test --grep @visual",
+    "test:a11y": "npx playwright test --grep @a11y",
+    "test:performance": "npx playwright test --grep @performance",
+    "test:ci": "npx playwright test --reporter=html,json --output=reports/",
+    "report:generate": "allure generate reports/allure-results -o reports/allure-report --clean",
+    "report:open": "allure open reports/allure-report",
+    "report:html": "npx playwright show-report reports/html"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@faker-js/faker": "^8.3.0",
+    "axe-playwright": "^1.2.3",
+    "allure-playwright": "^2.10.0",
+    "pg": "^8.12.0",
+    "typescript": "^5.3.0",
+    "@types/node": "^20.10.0",
+    "@types/pg": "^8.10.0"
+  }
+}
