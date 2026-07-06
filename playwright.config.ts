@@ -1,4 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export default defineConfig({
   testDir: './tests',
@@ -17,12 +19,12 @@ export default defineConfig({
     toHaveScreenshot: { maxDiffPixelRatio: 0.01 },
   },
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    baseURL: process.env.BASE_URL || 'https://dev.stayzi.app',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    locale: 'en-US',
-    timezoneId: 'America/New_York',
+    locale: 'fr-FR',
+    timezoneId: 'Africa/Casablanca',
     actionTimeout: 10000,
     navigationTimeout: 30000,
   },
@@ -34,10 +36,4 @@ export default defineConfig({
     { name: 'mobile-safari', use: { ...devices['iPhone 13'] } },
     { name: 'tablet', use: { ...devices['iPad Pro'] } },
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
 });

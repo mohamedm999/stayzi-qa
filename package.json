@@ -1,31 +1,34 @@
 {
+  "name": "stayzi-qa",
+  "version": "1.0.0",
+  "description": "StayZi Playwright Testing Framework",
   "scripts": {
     "test": "npx playwright test",
-    "test:ui": "npx playwright test --project=chromium",
-    "test:api": "npx playwright test tests/api/",
-    "test:e2e": "npx playwright test tests/e2e/",
-    "test:mobile": "npx playwright test --project='mobile-chrome' --project='mobile-safari'",
+    "test:ui": "npx playwright test --ui",
     "test:headed": "npx playwright test --headed",
     "test:debug": "npx playwright test --debug",
-    "test:parallel": "npx playwright test --workers=4",
+    "test:dev": "npx playwright test --project=dev",
+    "test:staging": "npx playwright test --project=staging",
     "test:smoke": "npx playwright test --grep @smoke",
     "test:regression": "npx playwright test --grep @regression",
-    "test:visual": "npx playwright test --grep @visual",
-    "test:a11y": "npx playwright test --grep @a11y",
-    "test:performance": "npx playwright test --grep @performance",
-    "test:ci": "npx playwright test --reporter=html,json --output=reports/",
-    "report:generate": "allure generate reports/allure-results -o reports/allure-report --clean",
-    "report:open": "allure open reports/allure-report",
-    "report:html": "npx playwright show-report reports/html"
+    "test:api": "npx playwright test tests/api/",
+    "test:e2e": "npx playwright test tests/e2e/",
+    "test:ui-only": "npx playwright test tests/ui/",
+    "test:mobile": "npx playwright test --project=mobile-chrome",
+    "report": "npx playwright show-report reports/html",
+    "codegen:dev": "npx playwright codegen https://dev.stayzi.app",
+    "codegen:staging": "npx playwright codegen https://staging.stayzi.app"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.0",
-    "@faker-js/faker": "^8.3.0",
-    "axe-playwright": "^1.2.3",
-    "allure-playwright": "^2.10.0",
-    "pg": "^8.12.0",
-    "typescript": "^5.3.0",
-    "@types/node": "^20.10.0",
-    "@types/pg": "^8.10.0"
+    "@playwright/test": "^1.45.0",
+    "@types/node": "^20.14.0",
+    "allure-playwright": "^2.15.0",
+    "dotenv": "^16.4.0",
+    "fs-extra": "^11.2.0",
+    "typescript": "^5.5.0",
+    "winston": "^3.13.0"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^10.5.0"
   }
 }
