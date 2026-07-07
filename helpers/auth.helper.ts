@@ -41,6 +41,7 @@ interface AuthState {
 export class AuthHelper {
   private api: ApiHelper;
   private token: string | null = null;
+  private refreshTokenValue: string | null = null;
   private authState: AuthState | null = null;
 
   constructor(request: APIRequestContext) {
@@ -88,6 +89,7 @@ export class AuthHelper {
 
     if (data) {
       this.token = data.accessToken || body.token || body.accessToken || '';
+      this.refreshTokenValue = data.refreshToken || body.refreshToken || '';
 
       if (data.user) {
         this.authState = {
@@ -99,6 +101,7 @@ export class AuthHelper {
       }
     } else {
       this.token = body.token || body.accessToken || '';
+      this.refreshTokenValue = body.refreshToken || '';
       if (body.user) {
         this.authState = {
           token: this.token,
@@ -188,11 +191,11 @@ export class AuthHelper {
 
     logger.step('Injecting auth token into browser');
 
-    await page.goto(config.activeBaseUrl);
-    await page.evaluate((token) => {
-      localStorage.setItem('token', token);
-      localStorage.setItem('auth_token', token);
-    }, this.token);
+    await page.goto('/');
+    await page.evaluate(({ accessToken, refreshToken }) => {
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+    }, { accessToken: this.token, refreshToken: this.refreshTokenValue });
 
     logger.info('Auth token injected');
   }
@@ -202,12 +205,9 @@ export class AuthHelper {
    */
   async clearAuth(page: Page): Promise<void> {
     await page.evaluate(() => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('auth_token');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
-      document.cookie.split(';').forEach((c) => {
-        document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
-      });
     });
     logger.info('Auth cleared from browser');
   }

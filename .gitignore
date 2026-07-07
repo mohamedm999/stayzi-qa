@@ -6,6 +6,9 @@ node_modules/
 .env.local
 .env.*.local
 
+# Auth state
+.auth/
+
 # Test output
 test-results/
 allure-results/
