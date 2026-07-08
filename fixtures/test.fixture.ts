@@ -2,6 +2,7 @@ import { test as base } from '@playwright/test';
 import { LoginPage } from '@pages/login.page';
 import { SignupPage } from '@pages/signup.page';
 import { DashboardPage } from '@pages/dashboard.page';
+import { ClientsPage } from '@pages/clients.page';
 import { ApiHelper } from '@helpers/api.helper';
 import { AuthHelper } from '@helpers/auth.helper';
 
@@ -9,6 +10,7 @@ interface TestFixtures {
   loginPage: LoginPage;
   signupPage: SignupPage;
   dashboardPage: DashboardPage;
+  clientsPage: ClientsPage;
   apiHelper: ApiHelper;
   authHelper: AuthHelper;
 }
@@ -27,6 +29,11 @@ export const test = base.extend<TestFixtures>({
   dashboardPage: async ({ page }, use) => {
     const dashboardPage = new DashboardPage(page);
     await use(dashboardPage);
+  },
+
+  clientsPage: async ({ page }, use) => {
+    const clientsPage = new ClientsPage(page);
+    await use(clientsPage);
   },
 
   apiHelper: async ({ request }, use) => {
