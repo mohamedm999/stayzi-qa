@@ -3,6 +3,7 @@ import { LoginPage } from '@pages/login.page';
 import { SignupPage } from '@pages/signup.page';
 import { DashboardPage } from '@pages/dashboard.page';
 import { ClientsPage } from '@pages/clients.page';
+import { PropertiesPage } from '@pages/properties.page';
 import { ApiHelper } from '@helpers/api.helper';
 import { AuthHelper } from '@helpers/auth.helper';
 
@@ -11,6 +12,7 @@ interface TestFixtures {
   signupPage: SignupPage;
   dashboardPage: DashboardPage;
   clientsPage: ClientsPage;
+  propertiesPage: PropertiesPage;
   apiHelper: ApiHelper;
   authHelper: AuthHelper;
 }
@@ -34,6 +36,11 @@ export const test = base.extend<TestFixtures>({
   clientsPage: async ({ page }, use) => {
     const clientsPage = new ClientsPage(page);
     await use(clientsPage);
+  },
+
+  propertiesPage: async ({ page }, use) => {
+    const propertiesPage = new PropertiesPage(page);
+    await use(propertiesPage);
   },
 
   apiHelper: async ({ request }, use) => {
