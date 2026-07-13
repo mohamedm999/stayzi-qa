@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 
 export class WaitHelper {
   constructor(private page: Page) {}
@@ -88,7 +88,7 @@ export class WaitHelper {
    * Wait for an element to have a specific text content
    */
   async forText(selector: string | Locator, text: string, timeout?: number): Promise<void> {
-    const locator = typeof selector === 'string' ? this.page.locator(selector) : locator;
+    const locator = typeof selector === 'string' ? this.page.locator(selector) : selector;
     await locator.filter({ hasText: text }).first().waitFor({ state: 'visible', timeout });
   }
 

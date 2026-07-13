@@ -105,7 +105,7 @@ export class BasePage {
    * Upload a file to a file input
    */
   async uploadFile(selector: string | Locator, filePath: string): Promise<void> {
-    const locator = typeof selector === 'string' ? this.page.locator(selector) : locator;
+    const locator = typeof selector === 'string' ? this.page.locator(selector) : selector;
     await locator.setInputFiles(filePath);
   }
 

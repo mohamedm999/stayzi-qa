@@ -1,4 +1,4 @@
-import { FullConfig } from '@playwright/test';
+import { FullConfig, chromium } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 
@@ -14,42 +14,87 @@ async function globalSetup(config: FullConfig) {
 
   console.log(`[globalSetup] Logging in as ${email}...`);
 
-  const response = await fetch(`${apiUrl}/auth/login`, {
+  const loginRes = await fetch(`${apiUrl}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
 
-  if (!response.ok) {
-    throw new Error(`Login failed: ${response.status} ${await response.text()}`);
+  if (!loginRes.ok) {
+    throw new Error(`API login failed: ${loginRes.status}`);
   }
 
-  const body = await response.json();
-  const { accessToken, refreshToken } = body.data;
+  const { data } = await loginRes.json();
+  const { accessToken, refreshToken } = data;
 
   if (!accessToken) {
     throw new Error('No accessToken in login response');
   }
 
+  console.log('[globalSetup] Got tokens from API');
+
+  const browser = await chromium.launch({ headless: true });
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  const url = new URL(baseUrl);
+  await context.addCookies([
+    {
+      name: 'access_token',
+      value: accessToken,
+      domain: url.hostname,
+      path: '/',
+      httpOnly: false,
+      secure: true,
+      sameSite: 'Lax',
+    },
+    {
+      name: 'refresh_token',
+      value: refreshToken || '',
+      domain: url.hostname,
+      path: '/',
+      httpOnly: false,
+      secure: true,
+      sameSite: 'Lax',
+    },
+  ]);
+
+  console.log('[globalSetup] Cookies injected, performing browser login...');
+
+  await page.goto(`${baseUrl}/auth/login`, { waitUntil: 'networkidle' });
+
+  await page.locator('#email').fill(email);
+  await page.locator('#password').fill(password);
+  await page.getByRole('button', { name: 'Se connecter' }).click();
+
+  const deadline = Date.now() + 45000;
+  while (Date.now() < deadline) {
+    const curUrl = page.url();
+    if (curUrl.includes('/concierge/')) {
+      console.log(`[globalSetup] Login successful, at: ${curUrl}`);
+      break;
+    }
+    await page.waitForTimeout(1000);
+  }
+
+  if (!page.url().includes('/concierge/')) {
+    throw new Error(`Login redirect failed. Current URL: ${page.url()}`);
+  }
+
+  await page.waitForLoadState('networkidle');
+
   const authDir = path.resolve(process.cwd(), '.auth');
   fs.mkdirSync(authDir, { recursive: true });
 
-  const storageState = {
-    cookies: [],
-    origins: [
-      {
-        origin: baseUrl,
-        localStorage: [
-          { name: 'accessToken', value: accessToken },
-          { name: 'refreshToken', value: refreshToken },
-        ],
-      },
-    ],
-  };
-
   const statePath = path.resolve(authDir, 'user.json');
-  fs.writeFileSync(statePath, JSON.stringify(storageState, null, 2));
+  const state = await context.storageState();
+  fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
+
+  const cookies = state.cookies.map(c => `${c.name}@${c.domain}`);
+  console.log(`[globalSetup] Cookies saved: ${cookies.join(', ') || 'none'}`);
   console.log(`[globalSetup] Auth state saved to ${statePath}`);
+
+  await browser.close();
 }
 
 export default globalSetup;

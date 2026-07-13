@@ -47,8 +47,8 @@ export class DashboardPage extends BasePage {
     this.addPropertyBtn = page.getByRole('button', { name: 'Ajouter un bien' });
     this.createReservationBtn = page.getByRole('button', { name: 'Créer réservation' });
 
-    this.chartSection = page.getByRole('heading', { name: 'Réservations par mois' }).locator('..');
-    this.chartTitle = page.getByRole('heading', { name: 'Réservations par mois' });
+    this.chartSection = page.getByText('Réservations par mois').locator('..');
+    this.chartTitle = page.getByText('Réservations par mois');
     this.period1mois = page.getByRole('button', { name: '1 mois' });
     this.period3mois = page.getByRole('button', { name: '3 mois' });
     this.period6mois = page.getByRole('button', { name: '6 mois' });
@@ -58,7 +58,7 @@ export class DashboardPage extends BasePage {
     this.table = page.locator('table');
     this.tableHeaders = page.locator('table th');
     this.tableRows = page.locator('tbody tr');
-    this.reservationCount = page.locator('text=/\\d+\\s*réservations?/i');
+    this.reservationCount = page.locator('.rounded-lg.border.bg-muted\\/50').getByText(/\d+\s*réservations?/i);
 
     this.emptyChartState = page.getByText('Aucune donnée');
   }
