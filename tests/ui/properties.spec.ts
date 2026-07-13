@@ -1,18 +1,18 @@
 import { test, expect } from '@fixtures/test.fixture';
+import { DataGenerator } from '@helpers/data.generator';
 
 test.describe('Properties Page', () => {
   test.use({ storageState: '.auth/user.json' });
 
-  const timestamp = Date.now();
   const testProperty = {
-    name: `Villa Test ${timestamp}`,
+    name: DataGenerator.property().title,
     type: 'VILLA' as const,
     city: 'Marrakech',
     country: 'Maroc',
     maxGuests: 4,
     bedrooms: 2,
     bathrooms: 1,
-    price: 500,
+    price: DataGenerator.property().pricePerNight,
   };
 
   test('@smoke should display page structure with heading and add button', async ({ propertiesPage }) => {
