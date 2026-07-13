@@ -6,6 +6,8 @@ import { ClientsPage } from '@pages/clients.page';
 import { PropertiesPage } from '@pages/properties.page';
 import { ApiHelper } from '@helpers/api.helper';
 import { AuthHelper } from '@helpers/auth.helper';
+import { SidebarComponent } from '@components/sidebar.component';
+import { HeaderComponent } from '@components/header.component';
 
 interface TestFixtures {
   loginPage: LoginPage;
@@ -13,6 +15,8 @@ interface TestFixtures {
   dashboardPage: DashboardPage;
   clientsPage: ClientsPage;
   propertiesPage: PropertiesPage;
+  sidebar: SidebarComponent;
+  header: HeaderComponent;
   apiHelper: ApiHelper;
   authHelper: AuthHelper;
 }
@@ -41,6 +45,16 @@ export const test = base.extend<TestFixtures>({
   propertiesPage: async ({ page }, use) => {
     const propertiesPage = new PropertiesPage(page);
     await use(propertiesPage);
+  },
+
+  sidebar: async ({ page }, use) => {
+    const sidebar = new SidebarComponent(page);
+    await use(sidebar);
+  },
+
+  header: async ({ page }, use) => {
+    const header = new HeaderComponent(page);
+    await use(header);
   },
 
   apiHelper: async ({ request }, use) => {

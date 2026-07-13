@@ -162,20 +162,20 @@ export class PropertyWizard {
 
   async fillForm(data: CreatePropertyData): Promise<void> {
     logger.step(`Filling property form: ${data.name}`);
-    await this.dialog.locator('#name').fill(data.name);
+    await this.dialog.getByRole('textbox', { name: /Nom du bien/ }).fill(data.name);
     await this.selectType(data.type);
     if (data.description) {
-      await this.dialog.locator('#description').fill(data.description);
+      await this.dialog.getByRole('textbox', { name: 'Description' }).fill(data.description);
     }
-    await this.dialog.locator('#city').fill(data.city);
-    await this.dialog.locator('#country').fill(data.country);
+    await this.dialog.getByRole('textbox', { name: /Ville/ }).fill(data.city);
+    await this.dialog.getByRole('textbox', { name: /Pays/ }).fill(data.country);
     if (data.locationUrl) {
-      await this.dialog.locator('#locationUrl').fill(data.locationUrl);
+      await this.dialog.getByRole('textbox', { name: /Lien de localisation/ }).fill(data.locationUrl);
     }
     await this.setMaxGuests(data.maxGuests);
-    await this.dialog.locator('#bedrooms').fill(String(data.bedrooms));
-    await this.dialog.locator('#bathrooms').fill(String(data.bathrooms));
-    await this.dialog.locator('#price').fill(String(data.price));
+    await this.dialog.getByRole('spinbutton', { name: /Chambres/ }).fill(String(data.bedrooms));
+    await this.dialog.getByRole('spinbutton', { name: /Salles de bain/ }).fill(String(data.bathrooms));
+    await this.dialog.getByRole('spinbutton', { name: /Prix/ }).fill(String(data.price));
   }
 
   async selectType(type: PropertyType): Promise<void> {
@@ -184,7 +184,7 @@ export class PropertyWizard {
   }
 
   async setMaxGuests(count: number): Promise<void> {
-    const input = this.dialog.locator('input[name="maxGuests"]');
+    const input = this.dialog.getByRole('spinbutton', { name: /Voyageurs/ });
     await input.click();
     await input.fill('');
     await input.fill(String(count));
@@ -199,7 +199,7 @@ export class PropertyWizard {
   }
 
   async getMaxGuests(): Promise<number> {
-    const val = await this.dialog.locator('input[name="maxGuests"]').inputValue();
+    const val = await this.dialog.getByRole('spinbutton', { name: /Voyageurs/ }).inputValue();
     return parseInt(val, 10) || 0;
   }
 
