@@ -1,0 +1,56 @@
+{
+  "urls": {
+    "login": "/auth/login",
+    "signup": "/auth/signup",
+    "dashboard": "/concierge/dashboard",
+    "clients": "/concierge/clients",
+    "properties": "/concierge/properties",
+    "bookings": "/concierge/bookings",
+    "otpVerify": "/auth/verify-otp"
+  },
+  "users": {
+    "admin": {
+      "email": "ahmed.benjelloun@conciergerie-marrakech.ma",
+      "password": "Admin@Marrakech2024!",
+      "firstName": "Ahmed",
+      "lastName": "Benjelloun",
+      "role": "ADMIN_CONCIERGERIE"
+    }
+  },
+  "expectedTexts": {
+    "login": {
+      "heading": "Bienvenue",
+      "subtitle": "Connectez-vous à votre compte Stayzi",
+      "submit": "Se connecter",
+      "forgotPassword": "Mot de passe oublié?",
+      "signupLink": "Créer un compte",
+      "noAccount": "Vous n'avez pas de compte?"
+    },
+    "signup": {
+      "heading": "Créer un compte",
+      "submit": "Créer un compte",
+      "loginLink": "Se connecter",
+      "passwordRequirements": ["8 caractères minimum", "1 majuscule", "1 minuscule", "1 chiffre"]
+    },
+    "sidebar": {
+      "navItems": [
+        "Dashboard", "Clients", "Biens", "Réservations",
+        "Fiche de police", "Livrets d'accueil", "Messages", "Collaborateurs"
+      ],
+      "disabledItems": ["Proprietaires", "Suivi financièrs"],
+      "toggleLabel": "Toggle Sidebar"
+    },
+    "logout": {
+      "dialogTitle": "Confirmer la déconnexion ?",
+      "dialogDescription": "Vous allez être déconnecté de votre session.",
+      "cancel": "Annuler",
+      "confirm": "Oui, déconnecter"
+    }
+  },
+  "timeouts": {
+    "navigation": 10000,
+    "short": 3000,
+    "medium": 5000,
+    "long": 15000
+  }
+}

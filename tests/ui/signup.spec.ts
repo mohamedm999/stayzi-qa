@@ -63,17 +63,16 @@ test.describe('Signup Page', () => {
     await expect(signupPage.passwordRequirements).toBeAttached();
   });
 
-  test('@regression should register a new user and redirect to OTP verification', async ({ signupPage, page }) => {
-    const ts = Date.now();
-    const email = `testuser${ts}@testmail.com`;
+  test('@regression should register a new user and redirect to OTP verification', async ({ signupPage, page, dataGenerator }) => {
+    const user = dataGenerator.user();
 
     await signupPage.fillSignupForm({
-      firstName: 'Test',
-      lastName: `User${ts}`,
-      email,
-      phone: '+212600000000',
-      password: 'TestPass1!',
-      confirmPassword: 'TestPass1!',
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone,
+      password: user.password,
+      confirmPassword: user.password,
     });
 
     await page.waitForTimeout(500);

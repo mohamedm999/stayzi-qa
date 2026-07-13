@@ -8,12 +8,14 @@ export class DataGenerator {
    * Generate a test user for registration
    */
   static user(overrides?: Partial<GeneratedUser>): GeneratedUser {
+    const ts = Date.now();
+    const rand = faker.string.alphanumeric(6).toLowerCase();
     return {
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
-      email: faker.internet.email(),
+      email: `testuser_${rand}${ts}@testmail.com`,
       password: `Test${faker.string.alphanumeric(8)}!1`,
-      phone: faker.phone.number('+2126#######'),
+      phone: `+2126${faker.string.numeric(8)}`,
       birthDate: '1995-06-15',
       ...overrides,
     };

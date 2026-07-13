@@ -6,6 +6,7 @@ import { ClientsPage } from '@pages/clients.page';
 import { PropertiesPage } from '@pages/properties.page';
 import { ApiHelper } from '@helpers/api.helper';
 import { AuthHelper } from '@helpers/auth.helper';
+import { DataGenerator } from '@helpers/data.generator';
 import { SidebarComponent } from '@components/sidebar.component';
 import { HeaderComponent } from '@components/header.component';
 
@@ -19,6 +20,7 @@ interface TestFixtures {
   header: HeaderComponent;
   apiHelper: ApiHelper;
   authHelper: AuthHelper;
+  dataGenerator: typeof DataGenerator;
 }
 
 export const test = base.extend<TestFixtures>({
@@ -65,6 +67,10 @@ export const test = base.extend<TestFixtures>({
   authHelper: async ({ request }, use) => {
     const auth = new AuthHelper(request);
     await use(auth);
+  },
+
+  dataGenerator: async ({}, use) => {
+    await use(DataGenerator);
   },
 });
 
