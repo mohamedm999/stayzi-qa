@@ -862,8 +862,7 @@ test.describe('DEEP ATTACKS — Exploitation Attempts', () => {
 
   test.describe('12. Race Conditions', () => {
     test('@security @attack race condition: simultaneous logins with same credentials', async ({ request }) => {
-      // Fire 10 login requests simultaneously
-      const promises = Array.from({ length: 10 }, (_, i) =>
+      const promises = Array.from({ length: 10 }, () =>
         request.fetch(`${API}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -885,6 +884,102 @@ test.describe('DEEP ATTACKS — Exploitation Attempts', () => {
         console.log('FINDING: Race condition — duplicate tokens issued simultaneously');
       }
       expect(true).toBe(true);
+    });
+  });
+
+  // ─── 13. MIDDLEWARE COOKIE-EXISTENCE BYPASS ──────────────────
+
+  test.describe('13. Middleware Auth Bypass', () => {
+    const protectedPaths = ['/', '/properties', '/clients', '/reservations', '/invoices', '/settings'];
+
+    const fakeTokens = [
+      { label: 'literal "anything"', value: 'anything' },
+      { label: 'empty string', value: '' },
+      { label: 'expired JWT', value: 'eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjF9.signature' },
+      { label: 'random base64', value: 'dGVzdA==' },
+      { label: 'SQL injection in token', value: "' OR 1=1 --" },
+    ];
+
+    for (const { label, value } of fakeTokens) {
+      test(`@security @attack cookie=${label} — middleware should reject, not serve SSR HTML`, async ({ request }) => {
+        for (const path of protectedPaths) {
+          const response = await request.fetch(`${BASE}${path}`, {
+            method: 'GET',
+            headers: {
+              Cookie: `access_token=${value}`,
+            },
+          });
+
+          const status = response.status();
+          const body = await response.text();
+          const isHtml = body.includes('<!DOCTYPE') || body.includes('<html');
+          const hasAppShell = body.includes('__next') || body.includes('id="__next"') || body.includes('id="root"');
+
+          console.log(`Cookie=${label} | ${path} → ${status} | HTML: ${isHtml} | AppShell: ${hasAppShell}`);
+
+          if (status === 200 && isHtml) {
+            console.log(`CRITICAL FINDING: Middleware served SSR HTML for ${path} with fake token "${label}"`);
+          }
+        }
+
+        // At minimum, all should NOT return 200 with full app shell
+        const response = await request.fetch(`${BASE}/`, {
+          method: 'GET',
+          headers: {
+            Cookie: `access_token=${value}`,
+          },
+        });
+
+        const body = await response.text();
+        const servedApp = response.status() === 200 && body.includes('__next');
+
+        if (servedApp) {
+          console.log('CRITICAL: Middleware only checks cookie existence, not JWT validity — any token bypasses auth');
+        }
+
+        expect(servedApp).toBe(false);
+      });
+    }
+
+    test('@security @attack no cookie at all — middleware should redirect to login', async ({ request }) => {
+      const response = await request.fetch(`${BASE}/`, {
+        method: 'GET',
+      });
+
+      const status = response.status();
+      const location = response.headers()['location'] || '';
+
+      console.log(`No cookie | / → ${status} | Location: ${location}`);
+
+      if (status === 200) {
+        console.log('FINDING: Root path returns 200 without auth cookie — may serve public content');
+      }
+
+      expect(status).not.toBe(200);
+    });
+
+    test('@security @attack forged JWT with valid structure but wrong signature', async ({ request }) => {
+      const forgedToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
+        'eyJzdWIiOiJ1c2VyQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzAwMDAwMDAwfQ.' +
+        'invalidSignature123456789';
+
+      const response = await request.fetch(`${BASE}/`, {
+        method: 'GET',
+        headers: {
+          Cookie: `access_token=${forgedToken}`,
+        },
+      });
+
+      const body = await response.text();
+      const servedApp = response.status() === 200 && body.includes('__next');
+
+      console.log(`Forged JWT valid structure | / → ${response.status()} | AppShell: ${servedApp}`);
+
+      if (servedApp) {
+        console.log('CRITICAL: Middleware accepted forged JWT with invalid signature');
+      }
+
+      expect(servedApp).toBe(false);
     });
   });
 });
