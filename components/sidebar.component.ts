@@ -65,7 +65,7 @@ export class SidebarComponent {
     this.page = page;
 
     // Sidebar structure
-    this.wrapper = page.locator('[data-slot="sidebar-wrapper"]');
+    this.wrapper = page.locator('[data-slot="sidebar"]');
     this.container = page.locator('[data-slot="sidebar-container"]');
     this.inner = page.locator('[data-slot="sidebar-inner"]');
     this.content = page.locator('[data-slot="sidebar-content"]');
@@ -73,8 +73,8 @@ export class SidebarComponent {
     this.footer = page.locator('[data-slot="sidebar-footer"]');
     this.rail = page.locator('[data-slot="sidebar-rail"]');
 
-    // Toggle
-    this.trigger = page.getByLabel('Toggle Sidebar');
+    // Toggle — use data-slot (sr-only text gives accessible name, no aria-label attribute)
+    this.trigger = page.locator('[data-slot="sidebar-trigger"]');
     this.mobileOverlay = page.locator('[data-vaul-drawer-overlay]');
     this.mobileDrawer = page.locator('[data-vaul-drawer][data-vaul-drawer-direction="left"]');
 
@@ -152,12 +152,7 @@ export class SidebarComponent {
   async goTo(item: NavItemName): Promise<void> {
     logger.step(`Sidebar → ${item}`);
     const link = this.page.getByRole('link', { name: item });
-    const btn = this.page.getByRole('button', { name: item });
-    if (await link.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await link.click();
-    } else {
-      await btn.click();
-    }
+    await link.click();
   }
 
   async goToDashboard(): Promise<void> { await this.goTo('Dashboard'); }
@@ -215,15 +210,14 @@ export class SidebarComponent {
   }
 
   async isItemActive(item: NavItemName): Promise<boolean> {
-    const link = this.page.getByRole('link', { name: item });
-    const btn = this.page.getByRole('button', { name: item });
-    const el = (await link.isVisible({ timeout: 1000 }).catch(() => false)) ? link : btn;
-    return (await el.getAttribute('data-active')) === 'true';
+    const active = this.page.locator('[data-slot="sidebar-menu-button"][data-active="true"]');
+    const text = await active.textContent().catch(() => '');
+    return text.trim() === item;
   }
 
   async isItemDisabled(item: NavItemName): Promise<boolean> {
     const btn = this.page.getByRole('button', { name: item });
-    return btn.isDisabled().catch(() => false);
+    return btn.evaluate((el) => el.className.includes('cursor-not-allowed')).catch(() => false);
   }
 
   async isMobileOpen(): Promise<boolean> {
