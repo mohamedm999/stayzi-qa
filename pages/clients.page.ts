@@ -66,7 +66,7 @@ export class ClientsPage extends BasePage {
   async goto(): Promise<void> {
     logger.step('Navigating to clients page');
     await this.page.goto('/concierge/clients', { waitUntil: 'domcontentloaded' });
-    await this.wait.forLoadingComplete();
+    await this.heading.waitFor({ state: 'visible', timeout: 10000 });
   }
 
   async getHeaderTexts(): Promise<string[]> {
