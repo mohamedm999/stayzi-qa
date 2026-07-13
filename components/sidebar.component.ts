@@ -1,202 +1,232 @@
 import { Page, Locator } from '@playwright/test';
 import { logger } from '@utils/logger';
 
+export type NavItemName =
+  | 'Dashboard'
+  | 'Clients'
+  | 'Biens'
+  | 'Réservations'
+  | 'Fiche de police'
+  | "Livrets d'accueil"
+  | 'Messages'
+  | 'Collaborateurs'
+  | 'Proprietaires'
+  | 'Suivi financièrs';
+
 export class SidebarComponent {
   private page: Page;
 
-  // ─── Sidebar Container ───────────────────────────────────────
-  readonly sidebar: Locator;
-  readonly toggleBtn: Locator; // mobile hamburger / collapse button
-  readonly overlay: Locator; // mobile backdrop
+  // ─── Sidebar Structure ──────────────────────────────────────
+  readonly wrapper: Locator;
+  readonly container: Locator;
+  readonly inner: Locator;
+  readonly content: Locator;
+  readonly header: Locator;
+  readonly footer: Locator;
+  readonly rail: Locator;
 
-  // ─── Guest Navigation ────────────────────────────────────────
+  // ─── Toggle ─────────────────────────────────────────────────
+  readonly trigger: Locator;
+  readonly mobileOverlay: Locator;
+  readonly mobileDrawer: Locator;
+
+  // ─── Navigation ─────────────────────────────────────────────
+  readonly navMenu: Locator;
   readonly dashboardLink: Locator;
-  readonly myTripsLink: Locator;
-  readonly myBookingsLink: Locator;
-  readonly messagesLink: Locator;
-  readonly favoritesLink: Locator;
-  readonly profileLink: Locator;
-  readonly settingsLink: Locator;
-
-  // ─── Host Navigation ─────────────────────────────────────────
-  readonly hostDashboardLink: Locator;
-  readonly myListingsLink: Locator;
-  readonly addListingLink: Locator;
+  readonly clientsLink: Locator;
+  readonly biensLink: Locator;
   readonly reservationsLink: Locator;
-  readonly calendarLink: Locator;
-  readonly earningsLink: Locator;
-  readonly reviewsLink: Locator;
+  readonly ficheDePoliceLink: Locator;
+  readonly livretsLink: Locator;
+  readonly messagesLink: Locator;
+  readonly collaborateursLink: Locator;
+  readonly proprietairesBtn: Locator;
+  readonly suiviFinanciersBtn: Locator;
+
+  // ─── User Menu (in sidebar footer) ──────────────────────────
+  readonly userTrigger: Locator;
+  readonly userDropdown: Locator;
+  readonly userName: Locator;
+  readonly userEmail: Locator;
+  readonly avatarInitials: Locator;
+  readonly upgradeItem: Locator;
+  readonly accountItem: Locator;
+  readonly billingItem: Locator;
+  readonly notificationsItem: Locator;
+  readonly logoutItem: Locator;
+
+  // ─── Logout Confirmation Dialog ─────────────────────────────
+  readonly logoutDialog: Locator;
+  readonly logoutDialogTitle: Locator;
+  readonly logoutDialogCancel: Locator;
+  readonly logoutDialogConfirm: Locator;
 
   constructor(page: Page) {
     this.page = page;
 
-    // Container
-    this.sidebar = page.locator(
-      '[data-testid="sidebar"], aside, [class*="sidebar"], [class*="side-nav"], nav[class*="dashboard"]'
-    );
-    this.toggleBtn = page.locator(
-      '[data-testid="sidebar-toggle"], button[class*="hamburger"], button[class*="menu-toggle"], button[aria-label*="menu"]'
-    );
-    this.overlay = page.locator(
-      '[class*="sidebar-overlay"], [class*="backdrop"], .sidebar-backdrop'
-    );
+    // Sidebar structure
+    this.wrapper = page.locator('[data-slot="sidebar-wrapper"]');
+    this.container = page.locator('[data-slot="sidebar-container"]');
+    this.inner = page.locator('[data-slot="sidebar-inner"]');
+    this.content = page.locator('[data-slot="sidebar-content"]');
+    this.header = page.locator('[data-slot="sidebar-header"]');
+    this.footer = page.locator('[data-slot="sidebar-footer"]');
+    this.rail = page.locator('[data-slot="sidebar-rail"]');
 
-    // Guest nav
-    this.dashboardLink = page.locator(
-      '[data-testid="sidebar-dashboard"], .sidebar a:has-text("Dashboard"), aside a:has-text("Dashboard")'
-    );
-    this.myTripsLink = page.locator(
-      '[data-testid="sidebar-trips"], .sidebar a:has-text("Trips"), aside a:has-text("Trips")'
-    );
-    this.myBookingsLink = page.locator(
-      '[data-testid="sidebar-bookings"], .sidebar a:has-text("Bookings"), aside a:has-text("Bookings")'
-    );
-    this.messagesLink = page.locator(
-      '[data-testid="sidebar-messages"], .sidebar a:has-text("Messages"), aside a:has-text("Messages")'
-    );
-    this.favoritesLink = page.locator(
-      '[data-testid="sidebar-favorites"], .sidebar a:has-text("Favorites"), aside a:has-text("Wishlist"), aside a:has-text("Saved")'
-    );
-    this.profileLink = page.locator(
-      '[data-testid="sidebar-profile"], .sidebar a:has-text("Profile"), aside a:has-text("Profile")'
-    );
-    this.settingsLink = page.locator(
-      '[data-testid="sidebar-settings"], .sidebar a:has-text("Settings"), aside a:has-text("Settings")'
-    );
+    // Toggle
+    this.trigger = page.getByLabel('Toggle Sidebar');
+    this.mobileOverlay = page.locator('[data-vaul-drawer-overlay]');
+    this.mobileDrawer = page.locator('[data-vaul-drawer][data-vaul-drawer-direction="left"]');
 
-    // Host nav
-    this.hostDashboardLink = page.locator(
-      '[data-testid="sidebar-host-dashboard"], .sidebar a:has-text("Dashboard"), aside a:has-text("Overview")'
-    );
-    this.myListingsLink = page.locator(
-      '[data-testid="sidebar-listings"], .sidebar a:has-text("Listings"), aside a:has-text("My Listings"), aside a:has-text("Properties")'
-    );
-    this.addListingLink = page.locator(
-      '[data-testid="sidebar-add-listing"], .sidebar a:has-text("Add Listing"), aside a:has-text("New Listing"), aside a:has-text("Create")'
-    );
-    this.reservationsLink = page.locator(
-      '[data-testid="sidebar-reservations"], .sidebar a:has-text("Reservations"), aside a:has-text("Bookings")'
-    );
-    this.calendarLink = page.locator(
-      '[data-testid="sidebar-calendar"], .sidebar a:has-text("Calendar"), aside a:has-text("Availability")'
-    );
-    this.earningsLink = page.locator(
-      '[data-testid="sidebar-earnings"], .sidebar a:has-text("Earnings"), aside a:has-text("Revenue"), aside a:has-text("Payouts")'
-    );
-    this.reviewsLink = page.locator(
-      '[data-testid="sidebar-reviews"], .sidebar a:has-text("Reviews"), aside a:has-text("Ratings")'
-    );
+    // Navigation — enabled items render as <a>, disabled as <button>
+    this.navMenu = page.locator('[data-slot="sidebar-menu"]');
+    this.dashboardLink = page.getByRole('link', { name: 'Dashboard' });
+    this.clientsLink = page.getByRole('link', { name: 'Clients' });
+    this.biensLink = page.getByRole('link', { name: 'Biens' });
+    this.reservationsLink = page.getByRole('link', { name: 'Réservations' });
+    this.ficheDePoliceLink = page.getByRole('link', { name: 'Fiche de police' });
+    this.livretsLink = page.getByRole('link', { name: "Livrets d'accueil" });
+    this.messagesLink = page.getByRole('link', { name: 'Messages' });
+    this.collaborateursLink = page.getByRole('link', { name: 'Collaborateurs' });
+    this.proprietairesBtn = page.getByRole('button', { name: 'Proprietaires' });
+    this.suiviFinanciersBtn = page.getByRole('button', { name: 'Suivi financièrs' });
+
+    // User menu (in sidebar footer)
+    this.userTrigger = this.footer.locator('[data-slot="dropdown-menu-trigger"]');
+    this.userDropdown = page.locator('[data-slot="dropdown-menu-content"]');
+    this.userName = this.footer.getByText(/Ahmed\s+Benjelloun/i);
+    this.userEmail = this.footer.getByText(/ahmed\.benjelloun@/i);
+    this.avatarInitials = this.footer.locator('[data-slot="avatar-fallback"]');
+    this.upgradeItem = this.userDropdown.getByText('Upgrade to Pro');
+    this.accountItem = this.userDropdown.getByText('Account');
+    this.billingItem = this.userDropdown.getByText('Billing');
+    this.notificationsItem = this.userDropdown.getByText('Notifications');
+    this.logoutItem = this.userDropdown.locator('[data-slot="dropdown-menu-item"][data-variant="destructive"]');
+
+    // Logout confirmation dialog
+    this.logoutDialog = page.locator('[data-slot="alert-dialog-content"]');
+    this.logoutDialogTitle = page.locator('[data-slot="alert-dialog-title"]');
+    this.logoutDialogCancel = page.locator('[data-slot="alert-dialog-cancel"]');
+    this.logoutDialogConfirm = page.locator('[data-slot="alert-dialog-action"]');
   }
 
-  // ─── Actions ─────────────────────────────────────────────────
+  // ─── Toggle Actions ─────────────────────────────────────────
 
-  /**
-   * Open sidebar (if collapsed or on mobile)
-   */
-  async open(): Promise<void> {
-    try {
-      if (await this.toggleBtn.isVisible({ timeout: 2000 })) {
-        await this.toggleBtn.click();
-        logger.step('Sidebar opened via toggle');
-      }
-    } catch {
-      // Sidebar might already be open
+  async toggle(): Promise<void> {
+    logger.step('Toggling sidebar');
+    await this.trigger.click();
+  }
+
+  async expand(): Promise<void> {
+    const state = await this.wrapper.getAttribute('data-state');
+    if (state === 'collapsed') {
+      await this.toggle();
     }
   }
 
-  /**
-   * Close sidebar (mobile)
-   */
-  async close(): Promise<void> {
-    try {
-      if (await this.overlay.isVisible({ timeout: 2000 })) {
-        await this.overlay.click();
-        logger.step('Sidebar closed via overlay');
-      }
-    } catch {
-      // No overlay — sidebar might be desktop (always visible)
+  async collapse(): Promise<void> {
+    const state = await this.wrapper.getAttribute('data-state');
+    if (state === 'expanded') {
+      await this.toggle();
     }
   }
 
-  // ─── Guest Navigation ────────────────────────────────────────
+  // ─── Mobile Actions ─────────────────────────────────────────
 
-  async goToDashboard(): Promise<void> {
-    logger.step('Sidebar → Dashboard');
-    await this.dashboardLink.click();
+  async openMobile(): Promise<void> {
+    if (await this.trigger.isVisible({ timeout: 2000 })) {
+      await this.trigger.click();
+      logger.step('Sidebar opened (mobile)');
+    }
   }
 
-  async goToTrips(): Promise<void> {
-    logger.step('Sidebar → Trips');
-    await this.myTripsLink.click();
+  async closeMobile(): Promise<void> {
+    if (await this.mobileOverlay.isVisible({ timeout: 2000 })) {
+      await this.mobileOverlay.click();
+      logger.step('Sidebar closed (mobile)');
+    }
   }
 
-  async goToBookings(): Promise<void> {
-    logger.step('Sidebar → Bookings');
-    await this.myBookingsLink.click();
+  // ─── Navigation ─────────────────────────────────────────────
+
+  async goTo(item: NavItemName): Promise<void> {
+    logger.step(`Sidebar → ${item}`);
+    const link = this.page.getByRole('link', { name: item });
+    const btn = this.page.getByRole('button', { name: item });
+    if (await link.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await link.click();
+    } else {
+      await btn.click();
+    }
   }
 
-  async goToMessages(): Promise<void> {
-    logger.step('Sidebar → Messages');
-    await this.messagesLink.click();
+  async goToDashboard(): Promise<void> { await this.goTo('Dashboard'); }
+  async goToClients(): Promise<void> { await this.goTo('Clients'); }
+  async goToBiens(): Promise<void> { await this.goTo('Biens'); }
+  async goToReservations(): Promise<void> { await this.goTo('Réservations'); }
+  async goToMessages(): Promise<void> { await this.goTo('Messages'); }
+
+  // ─── User Menu ──────────────────────────────────────────────
+
+  async openUserMenu(): Promise<void> {
+    logger.step('Opening user dropdown');
+    await this.userTrigger.click();
   }
 
-  async goToProfile(): Promise<void> {
-    logger.step('Sidebar → Profile');
-    await this.profileLink.click();
+  async logout(): Promise<void> {
+    logger.step('Logging out via sidebar');
+    await this.openUserMenu();
+    await this.logoutItem.click();
+    await this.logoutDialogConfirm.click();
   }
 
-  async goToSettings(): Promise<void> {
-    logger.step('Sidebar → Settings');
-    await this.settingsLink.click();
+  async cancelLogout(): Promise<void> {
+    logger.step('Cancelling logout');
+    await this.openUserMenu();
+    await this.logoutItem.click();
+    await this.logoutDialogCancel.click();
   }
 
-  // ─── Host Navigation ─────────────────────────────────────────
+  // ─── State Checks ───────────────────────────────────────────
 
-  async goToListings(): Promise<void> {
-    logger.step('Sidebar → My Listings');
-    await this.myListingsLink.click();
+  async getState(): Promise<'expanded' | 'collapsed'> {
+    return (await this.wrapper.getAttribute('data-state')) as 'expanded' | 'collapsed';
   }
 
-  async goToAddListing(): Promise<void> {
-    logger.step('Sidebar → Add Listing');
-    await this.addListingLink.click();
+  async isExpanded(): Promise<boolean> {
+    return (await this.getState()) === 'expanded';
   }
 
-  async goToReservations(): Promise<void> {
-    logger.step('Sidebar → Reservations');
-    await this.reservationsLink.click();
+  async isCollapsed(): Promise<boolean> {
+    return (await this.getState()) === 'collapsed';
   }
 
-  async goToCalendar(): Promise<void> {
-    logger.step('Sidebar → Calendar');
-    await this.calendarLink.click();
-  }
-
-  async goToEarnings(): Promise<void> {
-    logger.step('Sidebar → Earnings');
-    await this.earningsLink.click();
-  }
-
-  // ─── State Checks ────────────────────────────────────────────
-
-  /**
-   * Check if sidebar is visible
-   */
   async isVisible(): Promise<boolean> {
     try {
-      return await this.sidebar.isVisible({ timeout: 3000 });
+      return await this.container.isVisible({ timeout: 3000 });
     } catch {
       return false;
     }
   }
 
-  /**
-   * Get the currently active/selected nav item text
-   */
   async getActiveItem(): Promise<string> {
-    const active = this.page.locator(
-      '.sidebar a[class*="active"], aside a[class*="active"], [data-testid="sidebar"] a[class*="current"]'
-    );
+    const active = this.page.locator('[data-slot="sidebar-menu-button"][data-active="true"]');
     return (await active.textContent()) || '';
+  }
+
+  async isItemActive(item: NavItemName): Promise<boolean> {
+    const link = this.page.getByRole('link', { name: item });
+    const btn = this.page.getByRole('button', { name: item });
+    const el = (await link.isVisible({ timeout: 1000 }).catch(() => false)) ? link : btn;
+    return (await el.getAttribute('data-active')) === 'true';
+  }
+
+  async isItemDisabled(item: NavItemName): Promise<boolean> {
+    const btn = this.page.getByRole('button', { name: item });
+    return btn.isDisabled().catch(() => false);
+  }
+
+  async isMobileOpen(): Promise<boolean> {
+    return (await this.mobileDrawer.getAttribute('data-state')) === 'open';
   }
 }
