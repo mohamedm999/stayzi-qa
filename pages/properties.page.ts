@@ -93,12 +93,12 @@ export class PropertyWizard {
     this.title = this.dialog.locator('[data-slot="drawer-title"]');
     this.closeBtn = this.dialog.getByRole('button', { name: 'Fermer' });
 
-    this.stepper = this.dialog.locator('[data-slot="stepper"]');
-    this.stepperItems = this.dialog.locator('[data-slot="stepper-item"]');
+    this.stepper = this.dialog.locator('[data-slot="stepper-nav"]');
+    this.stepperItems = this.dialog.locator('[data-slot="stepper-indicator"]');
 
-    this.step1Panel = this.dialog.locator('[data-slot="stepper-panel"][data-state="1"]');
-    this.step2Panel = this.dialog.locator('[data-slot="stepper-panel"][data-state="2"]');
-    this.step3Panel = this.dialog.locator('[data-slot="stepper-panel"][data-state="3"]');
+    this.step1Panel = this.dialog.locator('[data-slot="stepper-content"]').nth(0);
+    this.step2Panel = this.dialog.locator('[data-slot="stepper-content"]').nth(1);
+    this.step3Panel = this.dialog.locator('[data-slot="stepper-content"]').nth(2);
 
     this.prevBtn = this.dialog.getByRole('button', { name: 'Précédent' });
     this.nextBtn = this.dialog.getByRole('button', { name: 'Suivant' });
@@ -184,22 +184,22 @@ export class PropertyWizard {
   }
 
   async setMaxGuests(count: number): Promise<void> {
-    const input = this.dialog.locator('#maxGuests');
+    const input = this.dialog.locator('input[name="maxGuests"]');
     await input.click();
     await input.fill('');
     await input.fill(String(count));
   }
 
   async incrementGuests(): Promise<void> {
-    await this.dialog.getByRole('button', { name: 'Augmenter' }).click();
+    await this.dialog.getByLabel('Augmenter').click();
   }
 
   async decrementGuests(): Promise<void> {
-    await this.dialog.getByRole('button', { name: 'Diminuer' }).click();
+    await this.dialog.getByLabel('Diminuer').click();
   }
 
   async getMaxGuests(): Promise<number> {
-    const val = await this.dialog.locator('#maxGuests').inputValue();
+    const val = await this.dialog.locator('input[name="maxGuests"]').inputValue();
     return parseInt(val, 10) || 0;
   }
 
@@ -219,10 +219,17 @@ export class PropertyWizard {
     await this.dialog.getByRole('button', { name: 'Enregistrer le bien' }).click();
   }
 
+  async clearICalFields(): Promise<void> {
+    const airbnbField = this.dialog.locator('input[placeholder*="airbnb"]');
+    const bookingField = this.dialog.locator('input[placeholder*="booking"]');
+    try { await airbnbField.clear(); } catch { /* field may not exist */ }
+    try { await bookingField.clear(); } catch { /* field may not exist */ }
+  }
+
   // ─── Step 3: Success ─────────────────────────────────────────
 
   async getSuccessMessage(): Promise<string> {
-    const msg = this.step3Panel.getByText('Bien ajouté avec succès');
+    const msg = this.step3Panel.getByText('Bien ajouté avec succès !');
     return (await msg.textContent()) || '';
   }
 

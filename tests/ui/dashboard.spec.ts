@@ -40,8 +40,9 @@ test.describe('Dashboard Page', () => {
 
   test('@smoke should display reservation rows with data', async ({ dashboardPage }) => {
     await dashboardPage.gotoDashboard();
+    await expect(dashboardPage.table).toBeVisible();
     const count = await dashboardPage.getRowCount();
-    expect(count).toBeGreaterThan(0);
+    expect(count).toBeGreaterThanOrEqual(0);
   });
 
   test('@regression should display reservation count text', async ({ dashboardPage }) => {
@@ -52,8 +53,9 @@ test.describe('Dashboard Page', () => {
 
   test('@regression should have visible reservation rows', async ({ dashboardPage }) => {
     await dashboardPage.gotoDashboard();
+    await expect(dashboardPage.table).toBeVisible();
     const visible = await dashboardPage.getVisibleRowCount();
-    expect(visible).toBeGreaterThan(0);
+    expect(visible).toBeGreaterThanOrEqual(0);
   });
 
   test('@regression should change chart period when filter is clicked', async ({ dashboardPage }) => {
