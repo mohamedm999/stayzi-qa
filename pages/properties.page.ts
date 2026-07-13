@@ -46,9 +46,9 @@ export class PropertiesPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    logger.step('Navigating to properties page');
+    logger.step('Navigating to properties list');
     await this.page.goto('/concierge/properties', { waitUntil: 'domcontentloaded' });
-    await this.wait.forLoadingComplete();
+    await this.addPropertyBtn.waitFor({ state: 'visible', timeout: 10000 });
   }
 
   async clickAddProperty(): Promise<PropertyWizard> {

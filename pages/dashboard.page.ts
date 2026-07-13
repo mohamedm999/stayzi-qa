@@ -66,7 +66,7 @@ export class DashboardPage extends BasePage {
   async gotoDashboard(): Promise<void> {
     logger.step('Navigating to dashboard');
     await this.page.goto('/concierge/dashboard', { waitUntil: 'domcontentloaded' });
-    await this.wait.forLoadingComplete();
+    await this.kpiClientsValue.waitFor({ state: 'visible', timeout: 10000 });
   }
 
   async getKpiValue(kpi: 'clients' | 'réservations' | 'biens'): Promise<string> {
