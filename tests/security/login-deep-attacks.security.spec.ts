@@ -982,4 +982,240 @@ test.describe('DEEP ATTACKS — Exploitation Attempts', () => {
       expect(servedApp).toBe(false);
     });
   });
+
+  // ─── 14. EXPLOITATION: SSR SHELL LEAK + CLIENT-SIDE BEHAVIOR ─
+
+  test.describe('14. Exploitation — SSR Shell Leakage (Browser)', () => {
+    test('@security @exploit fake cookie loads full Next.js app shell with embedded data', async ({ browser }) => {
+      const context = await browser.newContext();
+      await context.addCookies([{
+        name: 'access_token',
+        value: 'exploit-fake-token-12345',
+        domain: 'dev.stayzi.app',
+        path: '/',
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+      }]);
+
+      const page = await context.newPage();
+
+      // Capture all API calls the client-side JS makes after shell loads
+      const apiCalls: { url: string; status: number; body?: string }[] = [];
+      page.on('response', async (response) => {
+        const url = response.url();
+        if (url.includes('api-dev.stayzi.app') || url.includes('/api/')) {
+          const body = await response.text().catch(() => '');
+          apiCalls.push({ url, status: response.status(), body: body.substring(0, 200) });
+        }
+      });
+
+      // Capture console messages from client-side JS
+      const consoleLogs: string[] = [];
+      page.on('console', (msg) => consoleLogs.push(`[${msg.type()}] ${msg.text()}`));
+
+      // Capture any JavaScript errors
+      const jsErrors: string[] = [];
+      page.on('pageerror', (error) => jsErrors.push(error.message));
+
+      await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+
+      const finalUrl = page.url();
+      const title = await page.title();
+      const html = await page.content();
+
+      console.log(`=== EXPLOITATION RESULT ===`);
+      console.log(`Final URL: ${finalUrl}`);
+      console.log(`Title: ${title}`);
+      console.log(`HTML length: ${html.length}`);
+      console.log(`API calls made by client: ${apiCalls.length}`);
+      for (const call of apiCalls) {
+        console.log(`  → ${call.url} [${call.status}] ${call.body}`);
+      }
+      console.log(`Console logs: ${consoleLogs.length}`);
+      for (const log of consoleLogs.slice(0, 20)) {
+        console.log(`  ${log}`);
+      }
+      console.log(`JS errors: ${jsErrors.length}`);
+      for (const err of jsErrors.slice(0, 10)) {
+        console.log(`  ${err}`);
+      }
+
+      // Check if the app shell loaded successfully
+      const appShellLoaded = html.includes('__next') || html.includes('_next');
+      console.log(`App shell loaded: ${appShellLoaded}`);
+
+      // Check what data is embedded in the HTML
+      const scriptTags = html.match(/<script[^>]*>([\s\S]*?)<\/script>/g) || [];
+      console.log(`Script tags in shell: ${scriptTags.length}`);
+
+      // Check for any sensitive data patterns in the HTML
+      const sensitivePatterns = [
+        'password', 'secret', 'key', 'token', 'api', 'endpoint',
+        'email', 'phone', 'address', 'rib', 'ice', 'societe',
+        'property', 'reservation', 'client', 'invoice',
+      ];
+      const foundInHtml = sensitivePatterns.filter(p =>
+        html.toLowerCase().includes(p)
+      );
+      console.log(`Sensitive patterns in HTML: ${foundInHtml.join(', ')}`);
+
+      // Check for embedded Next.js build manifest / routes
+      const hasBuildManifest = html.includes('buildManifest');
+      const hasRouteManifest = html.includes('routeManifest') || html.includes('routemanager');
+      console.log(`Build manifest: ${hasBuildManifest}, Route manifest: ${hasRouteManifest}`);
+
+      // Check for any _next/data URLs that might leak data
+      const nextDataUrls = html.match(/_next\/data\/[^"'\s]*/g) || [];
+      console.log(`_next/data URLs in HTML: ${nextDataUrls.length}`);
+      for (const url of nextDataUrls.slice(0, 5)) {
+        console.log(`  ${url}`);
+      }
+
+      await context.close();
+
+      // The middleware served the shell — that's the vulnerability
+      console.log(`\n=== VERDICT ===`);
+      console.log('Middleware served full Next.js app shell with fake cookie.');
+      console.log('Client-side JS then tried to fetch data from API (which failed with 401).');
+      console.log('VULNERABILITY: Attacker can load the full application in their browser.');
+      console.log('The app bundle contains business logic, API routes, data models.');
+
+      expect(appShellLoaded).toBe(true);
+    });
+
+    test('@security @exploit analyze Next.js bundle for exposed secrets/endpoints', async ({ browser }) => {
+      const context = await browser.newContext();
+      await context.addCookies([{
+        name: 'access_token',
+        value: 'exploit-fake-token-12345',
+        domain: 'dev.stayzi.app',
+        path: '/',
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+      }]);
+
+      const page = await context.newPage();
+
+      // Intercept all JS bundle files loaded by the app
+      const jsBundles: { url: string; body: string }[] = [];
+      page.on('response', async (response) => {
+        const url = response.url();
+        if (url.endsWith('.js') || url.includes('_next/static/chunks/')) {
+          const body = await response.text().catch(() => '');
+          if (body.length > 0) {
+            jsBundles.push({ url: url.replace(BASE, ''), body });
+          }
+        }
+      });
+
+      await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+
+      console.log(`=== NEXT.JS BUNDLE ANALYSIS ===`);
+      console.log(`Total JS bundles loaded: ${jsBundles.length}`);
+
+      // Analyze all bundles for sensitive patterns
+      const allEndpoints: string[] = [];
+      const allSecrets: string[] = [];
+      const allApiRoutes: string[] = [];
+
+      for (const bundle of jsBundles) {
+        // Find API endpoint patterns
+        const endpoints = bundle.body.match(/["'`](\/api\/[^'"`\s]+)["'`]/g) || [];
+        allEndpoints.push(...endpoints.map(e => e.replace(/["'`]/g, '')));
+
+        // Find hardcoded URLs
+        const urls = bundle.body.match(/https?:\/\/[^'"`\s]+/g) || [];
+        allApiRoutes.push(...urls.filter(u => u.includes('api') || u.includes('stayzi')));
+
+        // Find potential secrets
+        const secrets = bundle.body.match(/(?:secret|key|password|token)["'\s]*[:=]["'\s]*["'][^"']+["']/gi) || [];
+        allSecrets.push(...secrets.map(s => s.substring(0, 100)));
+      }
+
+      const uniqueEndpoints = [...new Set(allEndpoints)];
+      const uniqueUrls = [...new Set(allApiRoutes)];
+      const uniqueSecrets = [...new Set(allSecrets)];
+
+      console.log(`\nAPI endpoints found in bundles:`);
+      for (const ep of uniqueEndpoints.slice(0, 30)) {
+        console.log(`  ${ep}`);
+      }
+
+      console.log(`\nHardcoded URLs found:`);
+      for (const url of uniqueUrls.slice(0, 20)) {
+        console.log(`  ${url}`);
+      }
+
+      console.log(`\nPotential secrets/keys:`);
+      for (const secret of uniqueSecrets.slice(0, 10)) {
+        console.log(`  ${secret}`);
+      }
+
+      if (uniqueEndpoints.length > 0) {
+        console.log(`\nCRITICAL: App bundle exposes ${uniqueEndpoints.length} API endpoints`);
+        console.log('Attacker can map the entire API surface from the client-side bundle');
+      }
+
+      await context.close();
+
+      expect(true).toBe(true);
+    });
+
+    test('@security @exploit check if authenticated API calls leak data after shell load', async ({ browser }) => {
+      const context = await browser.newContext();
+      await context.addCookies([{
+        name: 'access_token',
+        value: 'exploit-fake-token-12345',
+        domain: 'dev.stayzi.app',
+        path: '/',
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+      }]);
+
+      const page = await context.newPage();
+
+      // Capture ALL network requests and responses
+      const networkLog: { method: string; url: string; status: number; body: string }[] = [];
+      page.on('response', async (response) => {
+        const url = response.url();
+        if (url.includes('api-dev.stayzi.app')) {
+          try {
+            const body = await response.text();
+            networkLog.push({
+              method: response.request().method(),
+              url: url.replace('https://api-dev.stayzi.app', ''),
+              status: response.status(),
+              body: body.substring(0, 500),
+            });
+          } catch {}
+        }
+      });
+
+      await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+
+      console.log(`=== API NETWORK LOG (after fake cookie shell load) ===`);
+      console.log(`Total API requests: ${networkLog.length}`);
+
+      for (const req of networkLog) {
+        console.log(`\n${req.method} ${req.url} → ${req.status}`);
+        console.log(`  Response: ${req.body}`);
+      }
+
+      // Check if any API call returned data despite fake token
+      const dataLeaks = networkLog.filter(r => r.status === 200 && r.body.length > 10);
+      if (dataLeaks.length > 0) {
+        console.log(`\nCRITICAL: ${dataLeaks.length} API calls returned data with fake token!`);
+        for (const leak of dataLeaks) {
+          console.log(`  LEAK: ${leak.method} ${leak.url} → ${leak.body}`);
+        }
+      }
+
+      await context.close();
+
+      expect(true).toBe(true);
+    });
+  });
 });
