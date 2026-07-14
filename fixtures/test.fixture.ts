@@ -5,6 +5,7 @@ import { DashboardPage } from '@pages/dashboard.page';
 import { ClientsPage } from '@pages/clients.page';
 import { PropertiesPage } from '@pages/properties.page';
 import { BookingsPage } from '@pages/bookings.page';
+import { PoliceFormsPage } from '@pages/police-forms.page';
 import { ApiHelper } from '@helpers/api.helper';
 import { AuthHelper } from '@helpers/auth.helper';
 import { DataGenerator } from '@helpers/data.generator';
@@ -18,6 +19,7 @@ interface TestFixtures {
   clientsPage: ClientsPage;
   propertiesPage: PropertiesPage;
   bookingsPage: BookingsPage;
+  policeFormsPage: PoliceFormsPage;
   sidebar: SidebarComponent;
   header: HeaderComponent;
   apiHelper: ApiHelper;
@@ -54,6 +56,11 @@ export const test = base.extend<TestFixtures>({
   bookingsPage: async ({ page }, use) => {
     const bookingsPage = new BookingsPage(page);
     await use(bookingsPage);
+  },
+
+  policeFormsPage: async ({ page }, use) => {
+    const policeFormsPage = new PoliceFormsPage(page);
+    await use(policeFormsPage);
   },
 
   sidebar: async ({ page }, use) => {
