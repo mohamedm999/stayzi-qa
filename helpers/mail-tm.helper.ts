@@ -241,33 +241,53 @@ export class MailTmHelper {
   }
 
   private async createAccount(address: string, password: string): Promise<MailTmAccount> {
-    const response = await this.request.fetch(`${BASE_URL}/accounts`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: { address, password },
-    });
+    return this.withRetry(async () => {
+      const response = await this.request.fetch(`${BASE_URL}/accounts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: { address, password },
+      });
 
-    if (!response.ok()) {
-      const error = await response.text().catch(() => '');
-      throw new Error(`Failed to create account ${address}: ${response.status()} ${error}`);
-    }
+      if (!response.ok()) {
+        const error = await response.text().catch(() => '');
+        throw new Error(`Failed to create account ${address}: ${response.status()} ${error}`);
+      }
 
-    return (await response.json()) as MailTmAccount;
+      return (await response.json()) as MailTmAccount;
+    }, `createAccount(${address})`);
   }
 
   private async getToken(address: string, password: string): Promise<string> {
-    const response = await this.request.fetch(`${BASE_URL}/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: { address, password },
-    });
+    return this.withRetry(async () => {
+      const response = await this.request.fetch(`${BASE_URL}/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: { address, password },
+      });
 
-    if (!response.ok()) {
-      throw new Error(`Failed to get token for ${address}: ${response.status()}`);
+      if (!response.ok()) {
+        throw new Error(`Failed to get token for ${address}: ${response.status()}`);
+      }
+
+      const body = (await response.json()) as TokenResponse;
+      return body.token;
+    }, `getToken(${address})`);
+  }
+
+  private async withRetry<T>(fn: () => Promise<T>, label: string, attempts = 3): Promise<T> {
+    let lastError: Error | null = null;
+    for (let i = 0; i < attempts; i++) {
+      try {
+        return await fn();
+      } catch (err) {
+        lastError = err as Error;
+        if (i < attempts - 1) {
+          logger.warn(`${label} attempt ${i + 1} failed, retrying...`);
+          await this.sleep(1000 * (i + 1));
+        }
+      }
     }
-
-    const body = (await response.json()) as TokenResponse;
-    return body.token;
+    throw lastError!;
   }
 
   private randomString(length: number): string {

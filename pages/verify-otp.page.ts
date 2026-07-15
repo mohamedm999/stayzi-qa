@@ -21,15 +21,15 @@ export class VerifyOtpPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    this.heading = page.getByRole('heading', { name: 'Vérification' });
-    this.subtitle = page.getByText(/code.*envoyé|vérification/i);
+    this.heading = page.getByText('Vérifiez votre email');
+    this.subtitle = page.getByText(/envoyé un code/i);
     this.form = page.locator('form');
     this.cardContainer = page.locator('[data-slot="card"]');
 
-    this.singleOtpInput = page.locator('input[name="otp"], input#otp, input[type="text"][maxlength]');
+    this.singleOtpInput = page.getByRole('textbox', { name: 'Code de vérification' });
     this.multiOtpInputs = page.locator('input[data-slot="otp-input"], input[name="otp-0"], input[name="otp_0"]');
 
-    this.submitBtn = page.getByRole('button', { name: /vérifier|confirmer|valider/i });
+    this.submitBtn = page.getByRole('button', { name: /verifier|vérifier|confirmer|valider/i });
     this.resendBtn = page.getByRole('button', { name: /renvoyer|renvoyer le code/i });
     this.backToLoginLink = page.getByRole('link', { name: /retour|se connecter/i });
 
@@ -77,7 +77,22 @@ export class VerifyOtpPage extends BasePage {
   async verifyOtp(code: string): Promise<void> {
     logger.step(`Verifying OTP: ${code}`);
     await this.fillOtp(code);
+    // Wait for submit button to become enabled after filling OTP
+    await this.page.waitForFunction(
+      (btn) => btn && !(btn as HTMLButtonElement).disabled,
+      await this.submitBtn.elementHandle(),
+      { timeout: 5000 }
+    );
     await this.clickSubmit();
+    // After successful OTP, click "Continuer" to proceed to dashboard
+    const continueBtn = this.page.getByRole('button', { name: /continuer/i });
+    try {
+      await continueBtn.waitFor({ state: 'visible', timeout: 10000 });
+      logger.step('Clicking Continuer button');
+      await continueBtn.click();
+    } catch {
+      // Continue button may not appear if OTP failed — that's expected
+    }
   }
 
   async clickResend(): Promise<void> {

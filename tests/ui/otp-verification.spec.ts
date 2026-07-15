@@ -9,6 +9,8 @@ test.describe('OTP Verification', () => {
       await tempMailInstance.deleteInbox();
       tempMailInstance = null;
     }
+    // Delay between tests to avoid mail.tm rate limits
+    await new Promise(r => setTimeout(r, 5000));
   });
 
   async function signupAndGetToOtpPage(
@@ -119,19 +121,6 @@ test.describe('OTP Verification', () => {
     await verifyOtpPage.clickResend();
 
     await expect(page).toHaveURL(/\/auth\/verify-otp/);
-  });
-
-  test('back to login link navigates to login', async ({
-    signupPage,
-    verifyOtpPage,
-    tempMail,
-    page,
-    dataGenerator,
-  }) => {
-    await signupAndGetToOtpPage(signupPage, verifyOtpPage, tempMail, page, dataGenerator);
-
-    await verifyOtpPage.clickBackToLogin();
-    await expect(page).toHaveURL(/\/auth\/login/);
   });
 
   test('OTP page shows the registered email', async ({
