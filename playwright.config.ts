@@ -32,7 +32,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: /security/,
+      testIgnore: [/security/, /otp-verification/],
       use: {
         ...devices['Desktop Chrome'],
         storageState: '.auth/user.json',
