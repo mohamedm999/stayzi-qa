@@ -45,6 +45,14 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
       },
     },
+    {
+      name: 'otp',
+      testMatch: /otp-verification/,
+      reuseExistingContext: false,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
     // { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
     // { name: 'webkit', use: { ...devices['Desktop Safari'] } },
     // { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },
