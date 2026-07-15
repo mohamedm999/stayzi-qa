@@ -32,7 +32,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: /security/,
+      testIgnore: [/security/, /otp-verification/],
       use: {
         ...devices['Desktop Chrome'],
         storageState: '.auth/user.json',
@@ -41,6 +41,14 @@ export default defineConfig({
     {
       name: 'security',
       testMatch: /security/,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'otp',
+      testMatch: /otp-verification/,
+      reuseExistingContext: false,
       use: {
         ...devices['Desktop Chrome'],
       },
