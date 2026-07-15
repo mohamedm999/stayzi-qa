@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import chalk from 'chalk';
 
-type LogLevel = 'info' | 'warn' | 'error' | 'debug' | 'step';
+type LogLevel = 'info' | 'warn' | 'error' | 'debug' | 'step' | 'success';
 
 class Logger {
   private logDir: string;
@@ -13,74 +14,69 @@ class Logger {
     }
   }
 
-  /**
-   * Core log method — writes to console + file
-   */
-  private log(level: LogLevel, message: string, meta?: unknown): void {
-    const timestamp = new Date().toISOString();
-    const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
-
-    // Console output
-    const consoleFn = {
-      info: console.log,
-      warn: console.warn,
-      error: console.error,
-      debug: console.debug,
-      step: console.log,
-    }[level];
-
-    if (meta) {
-      consoleFn(`${prefix} ${message}`, meta);
-    } else {
-      consoleFn(`${prefix} ${message}`);
-    }
-
-    // File output
-    this.writeToFile(`${prefix} ${message}${meta ? ' ' + JSON.stringify(meta) : ''}`);
+  private timestamp(): string {
+    return new Date().toISOString().slice(11, 19);
   }
 
-  /**
-   * Append a line to today's log file
-   */
+  private log(level: LogLevel, message: string, meta?: unknown): void {
+    const ts = chalk.dim(this.timestamp());
+
+    const styled = {
+      step:     `${ts} ${chalk.green('▶')} ${chalk.green(message)}`,
+      info:     `${ts} ${chalk.cyan('ℹ')} ${message}`,
+      warn:     `${ts} ${chalk.yellow('⚠')} ${chalk.yellow(message)}`,
+      error:    `${ts} ${chalk.red('✗')} ${chalk.red(message)}`,
+      success:  `${ts} ${chalk.green('✓')} ${chalk.green(message)}`,
+      debug:    `${ts} ${chalk.dim('·')} ${chalk.dim(message)}`,
+    }[level];
+
+    const consoleFn = level === 'error' ? console.error
+                    : level === 'warn'  ? console.warn
+                    : console.log;
+
+    if (meta) {
+      consoleFn(`${styled} ${JSON.stringify(meta)}`);
+    } else {
+      consoleFn(styled);
+    }
+
+    this.writeToFile(`${this.timestamp()} [${level.toUpperCase()}] ${message}${meta ? ' ' + JSON.stringify(meta) : ''}`);
+  }
+
   private writeToFile(line: string): void {
     const date = new Date().toISOString().split('T')[0];
     const filePath = path.join(this.logDir, `test-${date}.log`);
     fs.appendFileSync(filePath, line + '\n', 'utf-8');
   }
 
-  /** Test step — highlights what the test is doing */
   step(message: string): void {
-    this.log('step', `▶ ${message}`);
+    this.log('step', message);
   }
 
-  /** General information */
   info(message: string, meta?: unknown): void {
     this.log('info', message, meta);
   }
 
-  /** Warning — something unexpected but test continues */
   warn(message: string, meta?: unknown): void {
-    this.log('warn', `⚠ ${message}`, meta);
+    this.log('warn', message, meta);
   }
 
-  /** Error — something failed */
   error(message: string, meta?: unknown): void {
-    this.log('error', `✗ ${message}`, meta);
+    this.log('error', message, meta);
   }
 
-  /** Debug — verbose details, only shows when needed */
+  success(message: string): void {
+    this.log('success', message);
+  }
+
   debug(message: string, meta?: unknown): void {
     this.log('debug', message, meta);
   }
 
-  /**
-   * Log a separator for readability
-   */
   separator(title?: string): void {
-    const line = '─'.repeat(60);
-    this.writeToFile(title ? `\n${line} ${title} ${line}\n` : `\n${line}\n`);
+    const line = chalk.dim('─'.repeat(50));
     if (title) {
-      console.log(`\n${line} ${title} ${line}`);
+      console.log(`\n${line} ${chalk.bold(title)} ${line}`);
     } else {
       console.log(`\n${line}`);
     }
