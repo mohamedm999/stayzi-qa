@@ -3,7 +3,7 @@ import { logger } from '@utils/logger';
 
 export type NavItemName =
   | 'Dashboard'
-  | 'Clients'
+  | 'Locataire'
   | 'Biens'
   | 'Réservations'
   | 'Fiche de police'
@@ -11,7 +11,11 @@ export type NavItemName =
   | 'Messages'
   | 'Collaborateurs'
   | 'Proprietaires'
-  | 'Suivi financièrs';
+  | 'Suivi financièrs'
+  | 'Mon profil'
+  | 'Membres'
+  | 'Facture'
+  | 'Aide & support';
 
 export class SidebarComponent {
   private page: Page;
@@ -33,7 +37,7 @@ export class SidebarComponent {
   // ─── Navigation ─────────────────────────────────────────────
   readonly navMenu: Locator;
   readonly dashboardLink: Locator;
-  readonly clientsLink: Locator;
+  readonly locataireLink: Locator;
   readonly biensLink: Locator;
   readonly reservationsLink: Locator;
   readonly ficheDePoliceLink: Locator;
@@ -42,6 +46,12 @@ export class SidebarComponent {
   readonly collaborateursLink: Locator;
   readonly proprietairesBtn: Locator;
   readonly suiviFinanciersBtn: Locator;
+
+  // ─── Admin Navigation ───────────────────────────────────────
+  readonly monProfilLink: Locator;
+  readonly membresLink: Locator;
+  readonly factureBtn: Locator;
+  readonly aideSupportLink: Locator;
 
   // ─── User Menu (in sidebar footer) ──────────────────────────
   readonly userTrigger: Locator;
@@ -81,7 +91,7 @@ export class SidebarComponent {
     // Navigation — enabled items render as <a>, disabled as <button>
     this.navMenu = page.locator('[data-slot="sidebar-menu"]');
     this.dashboardLink = page.getByRole('link', { name: 'Dashboard' });
-    this.clientsLink = page.getByRole('link', { name: 'Clients' });
+    this.locataireLink = page.getByRole('link', { name: 'Locataire' });
     this.biensLink = page.getByRole('link', { name: 'Biens' });
     this.reservationsLink = page.getByRole('link', { name: 'Réservations' });
     this.ficheDePoliceLink = page.getByRole('link', { name: 'Fiche de police' });
@@ -90,6 +100,12 @@ export class SidebarComponent {
     this.collaborateursLink = page.getByRole('link', { name: 'Collaborateurs' });
     this.proprietairesBtn = page.getByRole('button', { name: 'Proprietaires' });
     this.suiviFinanciersBtn = page.getByRole('button', { name: 'Suivi financièrs' });
+
+    // Admin navigation
+    this.monProfilLink = page.getByRole('link', { name: 'Mon profil' });
+    this.membresLink = page.getByRole('link', { name: 'Membres' });
+    this.factureBtn = page.getByRole('button', { name: 'Facture' });
+    this.aideSupportLink = page.getByRole('link', { name: 'Aide & support' });
 
     // User menu (in sidebar footer)
     this.userTrigger = this.footer.locator('[data-slot="dropdown-menu-trigger"]');
@@ -156,7 +172,7 @@ export class SidebarComponent {
   }
 
   async goToDashboard(): Promise<void> { await this.goTo('Dashboard'); }
-  async goToClients(): Promise<void> { await this.goTo('Clients'); }
+  async goToLocataire(): Promise<void> { await this.goTo('Locataire'); }
   async goToBiens(): Promise<void> { await this.goTo('Biens'); }
   async goToReservations(): Promise<void> { await this.goTo('Réservations'); }
   async goToMessages(): Promise<void> { await this.goTo('Messages'); }

@@ -9,9 +9,10 @@ test.describe('Sidebar Navigation', () => {
     await expect(sidebar.dashboardLink).toBeVisible();
   });
 
-  test('@smoke should display all 10 nav items', async ({ sidebar }) => {
+  test('@smoke should display all 14 nav items', async ({ sidebar }) => {
+    // Main nav items (10)
     await expect(sidebar.dashboardLink).toBeVisible();
-    await expect(sidebar.clientsLink).toBeVisible();
+    await expect(sidebar.locataireLink).toBeVisible();
     await expect(sidebar.biensLink).toBeVisible();
     await expect(sidebar.reservationsLink).toBeVisible();
     await expect(sidebar.ficheDePoliceLink).toBeVisible();
@@ -20,6 +21,11 @@ test.describe('Sidebar Navigation', () => {
     await expect(sidebar.collaborateursLink).toBeVisible();
     await expect(sidebar.proprietairesBtn).toBeVisible();
     await expect(sidebar.suiviFinanciersBtn).toBeVisible();
+    // Admin nav items (4)
+    await expect(sidebar.monProfilLink).toBeVisible();
+    await expect(sidebar.membresLink).toBeVisible();
+    await expect(sidebar.factureBtn).toBeVisible();
+    await expect(sidebar.aideSupportLink).toBeVisible();
   });
 
   test('@smoke should highlight active nav item based on current route', async ({ sidebar }) => {
@@ -27,10 +33,10 @@ test.describe('Sidebar Navigation', () => {
     expect(await sidebar.isItemActive('Dashboard')).toBe(true);
   });
 
-  test('@smoke should navigate to Clients page via sidebar', async ({ sidebar, page }) => {
-    await sidebar.goToClients();
+  test('@smoke should navigate to Locataire page via sidebar', async ({ sidebar, page }) => {
+    await sidebar.goToLocataire();
     await expect(page).toHaveURL(/\/concierge\/clients/);
-    expect(await sidebar.isItemActive('Clients')).toBe(true);
+    expect(await sidebar.isItemActive('Locataire')).toBe(true);
   });
 
   test('@smoke should navigate to Biens page via sidebar', async ({ sidebar, page }) => {
@@ -46,6 +52,7 @@ test.describe('Sidebar Navigation', () => {
   test('@regression disabled nav items should not be clickable links', async ({ sidebar }) => {
     await expect(sidebar.proprietairesBtn).toHaveClass(/cursor-not-allowed/);
     await expect(sidebar.suiviFinanciersBtn).toHaveClass(/cursor-not-allowed/);
+    await expect(sidebar.factureBtn).toHaveClass(/cursor-not-allowed/);
   });
 
   test('@regression should collapse sidebar via trigger', async ({ sidebar }) => {

@@ -11,19 +11,21 @@ type RowData = {
   checkout: string;
   persons: string;
   status: string;
-  createdAt: string;
+  amount: string;
 };
 
 export class DashboardPage extends BasePage {
-  readonly kpiClientsValue: Locator;
-  readonly kpiReservationsValue: Locator;
-  readonly kpiBiensValue: Locator;
+  readonly kpiOccupation: Locator;
+  readonly kpiRevenus: Locator;
+  readonly kpiCheckins: Locator;
+  readonly kpiATraiter: Locator;
 
   readonly addPropertyBtn: Locator;
   readonly createReservationBtn: Locator;
 
   readonly chartSection: Locator;
   readonly chartTitle: Locator;
+  readonly chartDescription: Locator;
   readonly period1mois: Locator;
   readonly period3mois: Locator;
   readonly period6mois: Locator;
@@ -37,18 +39,22 @@ export class DashboardPage extends BasePage {
 
   readonly emptyChartState: Locator;
 
+  readonly todayPanel: Locator;
+
   constructor(page: Page) {
     super(page);
 
-    this.kpiClientsValue = page.locator('.font-heading.text-3xl.font-bold.tabular-nums').nth(0);
-    this.kpiReservationsValue = page.locator('.font-heading.text-3xl.font-bold.tabular-nums').nth(1);
-    this.kpiBiensValue = page.locator('.font-heading.text-3xl.font-bold.tabular-nums').nth(2);
+    this.kpiOccupation = page.getByText('Occupation');
+    this.kpiRevenus = page.getByText('Revenus (mois)');
+    this.kpiCheckins = page.getByText('Check-ins 7j');
+    this.kpiATraiter = page.getByText('À traiter');
 
-    this.addPropertyBtn = page.getByRole('button', { name: 'Ajouter un bien' });
-    this.createReservationBtn = page.getByRole('button', { name: 'Créer réservation' });
+    this.addPropertyBtn = page.getByRole('button', { name: /Ajouter un bien/i });
+    this.createReservationBtn = page.getByRole('button', { name: /Créer réservation|Nouvelle réservation/i });
 
     this.chartSection = page.getByText('Réservations par mois').locator('..');
     this.chartTitle = page.getByText('Réservations par mois');
+    this.chartDescription = page.getByText(/Évolution sur les/i);
     this.period1mois = page.getByRole('button', { name: '1 mois' });
     this.period3mois = page.getByRole('button', { name: '3 mois' });
     this.period6mois = page.getByRole('button', { name: '6 mois' });
@@ -58,23 +64,30 @@ export class DashboardPage extends BasePage {
     this.table = page.locator('table');
     this.tableHeaders = page.locator('table th');
     this.tableRows = page.locator('tbody tr');
-    this.reservationCount = page.locator('.rounded-lg.border.bg-muted\\/50').getByText(/\d+\s*réservations?/i);
+    this.reservationCount = page.getByText(/\d+\s*réservation/);
 
     this.emptyChartState = page.getByText('Aucune donnée');
+
+    this.todayPanel = page.getByText('Aujourd\'hui').locator('..');
   }
 
   async gotoDashboard(): Promise<void> {
     logger.step('Navigating to dashboard');
     await this.page.goto('/concierge/dashboard', { waitUntil: 'domcontentloaded' });
-    await this.kpiClientsValue.waitFor({ state: 'visible', timeout: 10000 });
+    await this.kpiOccupation.waitFor({ state: 'visible', timeout: 10000 });
   }
 
-  async getKpiValue(kpi: 'clients' | 'réservations' | 'biens'): Promise<string> {
-    switch (kpi) {
-      case 'clients': return (await this.kpiClientsValue.textContent()) || '';
-      case 'réservations': return (await this.kpiReservationsValue.textContent()) || '';
-      case 'biens': return (await this.kpiBiensValue.textContent()) || '';
-    }
+  async getKpiValue(kpi: 'occupation' | 'revenus' | 'checkins' | 'a-traiter'): Promise<string> {
+    const labelMap: Record<string, Locator> = {
+      'occupation': this.kpiOccupation,
+      'revenus': this.kpiRevenus,
+      'checkins': this.kpiCheckins,
+      'a-traiter': this.kpiATraiter,
+    };
+    const label = labelMap[kpi];
+    const card = label.locator('..').locator('..');
+    const value = card.locator('.text-2xl.font-bold');
+    return (await value.textContent()) || '';
   }
 
   async clickAddProperty(): Promise<void> {
@@ -110,23 +123,21 @@ export class DashboardPage extends BasePage {
     const count = await rows.count();
     if (index >= count) return null;
 
-    const cells = rows.nth(index).locator('td, th');
+    const cells = rows.nth(index).locator('td');
     const cellCount = await cells.count();
-    if (cellCount < 8) return null;
+    if (cellCount < 7) return null;
 
     const client = ((await cells.nth(0).textContent()) || '').trim();
-
-    // skip empty/skeleton rows
     if (!client && (await cells.nth(1).textContent())?.trim() === '') return null;
 
     return {
-      client: client || ((await cells.nth(1).textContent()) || '').trim(),
+      client,
       phone: ((await cells.nth(1).textContent()) || '').trim(),
       checkin: ((await cells.nth(2).textContent()) || '').trim(),
       checkout: ((await cells.nth(3).textContent()) || '').trim(),
       persons: ((await cells.nth(4).textContent()) || '').trim(),
       status: ((await cells.nth(5).textContent()) || '').trim(),
-      createdAt: ((await cells.nth(6).textContent()) || '').trim(),
+      amount: ((await cells.nth(6).textContent()) || '').trim(),
     };
   }
 
