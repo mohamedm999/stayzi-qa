@@ -1,6 +1,7 @@
 import { FullConfig, chromium } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { logger } from '../utils/logger';
 
 async function globalSetup(config: FullConfig) {
   const apiUrl = process.env.API_URL || 'https://api-dev.stayzi.app/api/v1';
@@ -12,7 +13,7 @@ async function globalSetup(config: FullConfig) {
     throw new Error('TEST_USER_EMAIL and TEST_USER_PASSWORD must be set in .env');
   }
 
-  console.log(`[globalSetup] Logging in as ${email}...`);
+  logger.step(`Logging in as ${email}...`);
 
   const loginRes = await fetch(`${apiUrl}/auth/login`, {
     method: 'POST',
@@ -31,7 +32,7 @@ async function globalSetup(config: FullConfig) {
     throw new Error('No accessToken in login response');
   }
 
-  console.log('[globalSetup] Got tokens from API');
+  logger.success('Got tokens from API');
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
@@ -59,7 +60,7 @@ async function globalSetup(config: FullConfig) {
     },
   ]);
 
-  console.log('[globalSetup] Cookies injected, performing browser login...');
+  logger.step('Cookies injected, performing browser login...');
 
   await page.goto(`${baseUrl}/auth/login`, { waitUntil: 'networkidle' });
 
@@ -71,7 +72,7 @@ async function globalSetup(config: FullConfig) {
   while (Date.now() < deadline) {
     const curUrl = page.url();
     if (curUrl.includes('/concierge/')) {
-      console.log(`[globalSetup] Login successful, at: ${curUrl}`);
+      logger.success(`Login successful, at: ${curUrl}`);
       break;
     }
     await page.waitForTimeout(1000);
@@ -91,8 +92,8 @@ async function globalSetup(config: FullConfig) {
   fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
 
   const cookies = state.cookies.map(c => `${c.name}@${c.domain}`);
-  console.log(`[globalSetup] Cookies saved: ${cookies.join(', ') || 'none'}`);
-  console.log(`[globalSetup] Auth state saved to ${statePath}`);
+  logger.info(`Cookies saved: ${cookies.join(', ') || 'none'}`);
+  logger.info(`Auth state saved to ${statePath}`);
 
   await browser.close();
 }
