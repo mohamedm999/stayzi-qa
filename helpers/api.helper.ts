@@ -87,6 +87,33 @@ export class ApiHelper {
     });
   }
 
+  async postAuth<T = unknown>(endpoint: string, token: string, data?: unknown): Promise<ApiResponse<T>> {
+    return this.post<T>(endpoint, {
+      data,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }
+
+  async putAuth<T = unknown>(endpoint: string, token: string, data?: unknown): Promise<ApiResponse<T>> {
+    return this.put<T>(endpoint, {
+      data,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }
+
+  async patchAuth<T = unknown>(endpoint: string, token: string, data?: unknown): Promise<ApiResponse<T>> {
+    return this.patch<T>(endpoint, {
+      data,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }
+
+  async deleteAuth<T = unknown>(endpoint: string, token: string): Promise<ApiResponse<T>> {
+    return this.delete<T>(endpoint, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }
+
   /**
    * Form-data POST (for file uploads, etc.)
    */
