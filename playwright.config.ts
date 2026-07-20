@@ -31,8 +31,15 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'api',
+      testDir: './tests/api',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
       name: 'chromium',
-      testIgnore: [/security/, /otp-verification/],
+      testIgnore: [/security/, /otp-verification/, /tests[\\/]api/],
       use: {
         ...devices['Desktop Chrome'],
         storageState: '.auth/user.json',
@@ -40,7 +47,7 @@ export default defineConfig({
     },
     {
       name: 'security',
-      testMatch: /security/,
+      testMatch: /tests[\\/]security/,
       use: {
         ...devices['Desktop Chrome'],
       },
