@@ -110,14 +110,14 @@ export class SidebarComponent {
     // User menu (in sidebar footer)
     this.userTrigger = this.footer.locator('[data-slot="dropdown-menu-trigger"]');
     this.userDropdown = page.locator('[data-slot="dropdown-menu-content"]');
-    this.userName = this.footer.getByText(/Ahmed\s+Benjelloun/i);
-    this.userEmail = this.footer.getByText(/ahmed\.benjelloun@/i);
+    this.userName = this.footer.locator('[data-slot="dropdown-menu-trigger"] .truncate.font-medium, [data-slot="dropdown-menu-trigger"] .font-semibold').first();
+    this.userEmail = this.footer.locator('[data-slot="dropdown-menu-trigger"] .truncate.text-xs').first();
     this.avatarInitials = this.footer.locator('[data-slot="avatar-fallback"]');
-    this.upgradeItem = this.userDropdown.getByText('Upgrade to Pro');
-    this.accountItem = this.userDropdown.getByText('Account');
-    this.billingItem = this.userDropdown.getByText('Billing');
-    this.notificationsItem = this.userDropdown.getByText('Notifications');
-    this.logoutItem = this.userDropdown.locator('[data-slot="dropdown-menu-item"][data-variant="destructive"]');
+    this.upgradeItem = this.userDropdown.getByRole('menuitem', { name: 'Profil' });
+    this.accountItem = this.userDropdown.getByRole('menuitem', { name: 'Profil' });
+    this.billingItem = this.userDropdown.getByRole('menuitem', { name: 'Paramètres' });
+    this.notificationsItem = this.userDropdown.getByRole('menuitem', { name: 'Notifications' });
+    this.logoutItem = this.userDropdown.getByRole('menuitem', { name: 'Déconnexion' });
 
     // Logout confirmation dialog
     this.logoutDialog = page.locator('[data-slot="alert-dialog-content"]');

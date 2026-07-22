@@ -44,8 +44,8 @@ export class ClientsPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    this.heading = page.getByRole('heading', { name: 'Clients' });
-    this.subtitle = page.getByText('Gérez votre base de clients et leurs préférences.');
+    this.heading = page.getByRole('heading', { name: 'Locataires' });
+    this.subtitle = page.getByText('Gérez votre base de locataires et leurs préférences.');
     this.nouveauClientBtn = page.getByRole('button', { name: 'Nouveau client' });
 
     this.tableContainer = page.locator('.rounded-xl.border').locator('..');

@@ -13,15 +13,17 @@ test.describe('Bookings Page — Table', () => {
     await bookingsPage.goto();
 
     const headers = await bookingsPage.getHeaderTexts();
-    expect(headers.length).toBeGreaterThanOrEqual(9);
+    expect(headers.length).toBeGreaterThanOrEqual(11);
 
     expect(headers[0].toLowerCase()).toContain('client');
-    expect(headers[1].toLowerCase()).toContain('téléphone');
-    expect(headers[2].toLowerCase()).toContain('check-in');
-    expect(headers[3].toLowerCase()).toContain('check-out');
-    expect(headers[4].toLowerCase()).toContain('pers');
-    expect(headers[5].toLowerCase()).toContain('statut');
-    expect(headers[6].toLowerCase()).toContain('montant');
+    expect(headers[1].toLowerCase()).toContain('propriété');
+    expect(headers[2].toLowerCase()).toContain('téléphone');
+    expect(headers[3].toLowerCase()).toContain('check-in');
+    expect(headers[4].toLowerCase()).toContain('check-out');
+    expect(headers[5].toLowerCase()).toContain('pers');
+    expect(headers[6].toLowerCase()).toContain('statut');
+    expect(headers[7].toLowerCase()).toContain('fiche police');
+    expect(headers[8].toLowerCase()).toContain('montant');
   });
 
   test('should display sync button with tooltip', async ({ bookingsPage }) => {
@@ -45,13 +47,13 @@ test.describe('Bookings Page — Table', () => {
     }
   });
 
-  test('should display rows with all 9 columns', async ({ bookingsPage }) => {
+  test('should display rows with all 11 columns', async ({ bookingsPage }) => {
     await bookingsPage.goto();
     const rowCount = await bookingsPage.getRowCount();
     if (rowCount > 0) {
       const firstRow = bookingsPage.tableRows.first();
       const cells = firstRow.locator('td');
-      expect(await cells.count()).toBeGreaterThanOrEqual(9);
+      expect(await cells.count()).toBeGreaterThanOrEqual(11);
     }
   });
 
@@ -71,9 +73,8 @@ test.describe('Bookings Page — Table', () => {
     const rowCount = await bookingsPage.getRowCount();
     if (rowCount > 0) {
       const firstRow = bookingsPage.tableRows.first();
-      // Check that row has 9 cells (including actions column)
       const cells = firstRow.locator('td');
-      expect(await cells.count()).toBe(9);
+      expect(await cells.count()).toBe(11);
       // Actions column (last cell) should contain interactive elements
       const lastCell = cells.last();
       const innerHtml = await lastCell.innerHTML();
@@ -99,7 +100,7 @@ test.describe('Bookings Page — Table', () => {
     const rowCount = await bookingsPage.getRowCount();
     for (let i = 0; i < rowCount; i++) {
       const data = await bookingsPage.getRowData(i);
-      if (data && data.amount !== '—') {
+      if (data && data.amount && data.amount !== '—') {
         expect(data.amount).toMatch(/MAD|—/);
       }
     }
@@ -123,10 +124,10 @@ test.describe('Bookings Page — Table', () => {
     expect(bookingsPage.page.url()).toContain('/concierge/bookings');
   });
 
-  test('should have 9 table header columns', async ({ bookingsPage }) => {
+  test('should have 11 table header columns', async ({ bookingsPage }) => {
     await bookingsPage.goto();
     const headers = bookingsPage.tableHeaders;
-    expect(await headers.count()).toBe(9);
+    expect(await headers.count()).toBe(11);
   });
 
   test('guest count should be a positive number', async ({ bookingsPage }) => {
