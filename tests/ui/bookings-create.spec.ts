@@ -18,7 +18,7 @@ test.describe('Bookings Page — Create Booking Wizard', () => {
 
     const drawer = bookingsPage.getCreateDrawer();
     await expect(drawer.stepperNav).toBeVisible();
-    expect(await drawer.stepperItems.count()).toBe(3);
+    expect(await drawer.stepperItems.count()).toBe(4);
   });
 
   test('step 1 should show property search form', async ({ bookingsPage }) => {

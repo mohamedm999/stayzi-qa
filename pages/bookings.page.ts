@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './base.page';
 import { logger } from '@utils/logger';
 
@@ -96,6 +96,7 @@ export class BookingsPage extends BasePage {
     logger.step('Navigating to bookings page');
     await this.page.goto('/concierge/bookings', { waitUntil: 'domcontentloaded' });
     await this.tableContainer.waitFor({ state: 'visible', timeout: 10000 });
+    await this.page.locator('[data-slot="skeleton"]').first().waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
   }
 
   async getHeaderTexts(): Promise<string[]> {
@@ -121,22 +122,22 @@ export class BookingsPage extends BasePage {
     const row = this.tableRows.nth(index);
     const cells = row.locator('td');
     const cellCount = await cells.count();
-    if (cellCount < 9) return null;
+    if (cellCount < 11) return null;
 
     return {
       client: ((await cells.nth(0).textContent()) || '').trim(),
-      phone: ((await cells.nth(1).textContent()) || '').trim(),
-      checkIn: ((await cells.nth(2).textContent()) || '').trim(),
-      checkOut: ((await cells.nth(3).textContent()) || '').trim(),
-      guests: ((await cells.nth(4).textContent()) || '').trim(),
-      status: ((await cells.nth(5).textContent()) || '').trim(),
-      amount: ((await cells.nth(6).textContent()) || '').trim(),
-      createdAt: ((await cells.nth(7).textContent()) || '').trim(),
+      phone: ((await cells.nth(2).textContent()) || '').trim(),
+      checkIn: ((await cells.nth(3).textContent()) || '').trim(),
+      checkOut: ((await cells.nth(4).textContent()) || '').trim(),
+      guests: ((await cells.nth(5).textContent()) || '').trim(),
+      status: ((await cells.nth(6).textContent()) || '').trim(),
+      amount: ((await cells.nth(8).textContent()) || '').trim(),
+      createdAt: ((await cells.nth(9).textContent()) || '').trim(),
     };
   }
 
   getStatusBadge(row: Locator): Locator {
-    return row.locator('td').nth(5).locator('span, div, p').first().or(row.locator('td').nth(5));
+    return row.locator('td').nth(6).locator('[data-slot="badge"]');
   }
 
   async getRowActions(index: number): Promise<{ view: Locator; cancel: Locator; complete: Locator }> {
@@ -253,7 +254,7 @@ export class CreateBookingDrawer {
     this.typeVilla = this.drawer.locator('#villa');
 
     // Step 2
-    this.propertyRadios = this.drawer.locator('[data-slot="radio-group-item"]');
+    this.propertyRadios = this.drawer.locator('[data-slot="radio-group-item"]:not(#appartement):not(#villa)');
     this.noPropertiesMsg = this.drawer.getByText('Aucune propriété ne correspond');
     this.skeletonCards = this.drawer.locator('.animate-pulse');
 
@@ -316,15 +317,20 @@ export class CreateBookingDrawer {
     const calendar = this.page.locator('[data-slot="calendar"]');
     await calendar.waitFor({ state: 'visible', timeout: 5000 });
 
-    // Select check-in date
-    const checkInDay = search.checkIn.split('-')[2];
-    await calendar.getByRole('button', { name: checkInDay, exact: false }).first().click();
-    // Select check-out date
-    const checkOutDay = search.checkOut.split('-')[2];
-    await calendar.getByRole('button', { name: checkOutDay, exact: false }).first().click();
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
 
-    // Confirm dates
-    await this.drawer.getByRole('button', { name: 'Confirmer' }).click();
+    // Select check-in date within the correct month grid
+    const [ciYear, ciMonth, ciDay] = search.checkIn.split('-');
+    const ciGrid = calendar.getByRole('grid', { name: monthNames[parseInt(ciMonth) - 1] });
+    await ciGrid.locator(`button[data-day="${ciDay}/${ciMonth}/${ciYear}"]`).click();
+    // Select check-out date within the correct month grid
+    const [coYear, coMonth, coDay] = search.checkOut.split('-');
+    const coGrid = calendar.getByRole('grid', { name: monthNames[parseInt(coMonth) - 1] });
+    await coGrid.locator(`button[data-day="${coDay}/${coMonth}/${coYear}"]`).click();
+
+    // Confirm dates (button is in a popover outside the drawer DOM)
+    await this.page.getByRole('button', { name: 'Confirmer' }).click();
 
     // Set city
     await this.citySelect.click();
@@ -356,7 +362,9 @@ export class CreateBookingDrawer {
 
   async selectProperty(index = 0): Promise<void> {
     logger.step(`Selecting property at index ${index}`);
-    await this.propertyRadios.nth(index).click();
+    const radio = this.propertyRadios.nth(index);
+    await radio.click();
+    await expect(radio).toHaveAttribute('data-state', 'checked', { timeout: 3000 });
   }
 
   async fillGuestInfo(guest: GuestInfo): Promise<void> {
@@ -417,15 +425,15 @@ export class BookingDetailDrawer {
   constructor(private page: Page) {
     this.drawer = page.locator('[data-vaul-drawer-direction="right"]');
     this.title = this.drawer.locator('[data-slot="drawer-title"]');
-    this.closeBtn = this.drawer.getByRole('button', { name: 'Fermer' });
-    this.statusBadge = this.drawer.locator('[data-slot="badge"]');
+    this.closeBtn = this.drawer.locator('[data-slot="drawer-close"]').first();
+    this.statusBadge = this.drawer.locator('[data-slot="badge"]').first();
 
     this.checkInDate = this.drawer.getByText('Check-in').locator('..');
     this.checkOutDate = this.drawer.getByText('Check-out').locator('..');
     this.nightsCount = this.drawer.locator('.lucide-moon').locator('..');
 
-    this.clientEmail = this.drawer.locator('a[href^="mailto:"]');
-    this.clientPhone = this.drawer.locator('a[href^="tel:"]');
+    this.clientEmail = this.drawer.locator('a[href^="mailto:"]').or(this.drawer.getByText('Email').first().locator('..'));
+    this.clientPhone = this.drawer.locator('a[href^="tel:"]').or(this.drawer.getByText(/^Téléphone$/).first().locator('..'));
     this.clientCountry = this.drawer.getByText('Pays').locator('..');
     this.guestCount = this.drawer.getByText('Voyageurs').locator('..');
     this.clientLanguage = this.drawer.getByText('Langue').locator('..');
@@ -437,7 +445,7 @@ export class BookingDetailDrawer {
     this.documentsSection = this.drawer.getByText('Documents');
     this.policeFormLink = this.drawer.getByRole('link', { name: /fiche de police/i });
     this.welcomeBookletLink = this.drawer.getByRole('link', { name: /livret/i });
-    this.qrCode = this.drawer.locator('img[alt*="QR"], img[alt*="qr"]');
+    this.qrCode = this.drawer.getByRole('img', { name: /qr code/i });
 
     this.instructions = this.drawer.getByText('Instructions');
     this.timestamps = this.drawer.getByText('Créée le');
@@ -485,10 +493,10 @@ export class CancelBookingDialog {
   readonly loadingText: Locator;
 
   constructor(private page: Page) {
-    this.dialog = page.locator('[data-slot="dialog-content"]');
-    this.title = this.dialog.locator('[data-slot="dialog-title"]');
+    this.dialog = page.getByRole('dialog', { name: /annuler/i });
+    this.title = this.dialog.getByRole('heading');
     this.description = this.dialog.locator('.text-sm.text-muted-foreground');
-    this.cancelBtn = this.dialog.locator('[data-slot="alert-dialog-cancel"]');
+    this.cancelBtn = this.dialog.getByRole('button', { name: 'Annuler' });
     this.confirmBtn = this.dialog.getByRole('button', { name: /confirmer l'annulation/i });
     this.loadingText = this.dialog.getByText('Annulation...');
   }

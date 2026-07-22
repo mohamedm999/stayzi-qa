@@ -191,11 +191,11 @@ export class PropertyWizard {
   }
 
   async incrementGuests(): Promise<void> {
-    await this.dialog.getByLabel('Augmenter').click();
+    await this.dialog.getByRole('button', { name: /augmenter|\+|plus/i }).first().click();
   }
 
   async decrementGuests(): Promise<void> {
-    await this.dialog.getByLabel('Diminuer').click();
+    await this.dialog.getByRole('button', { name: /diminuer|\-|minus/i }).first().click();
   }
 
   async getMaxGuests(): Promise<number> {
@@ -204,11 +204,20 @@ export class PropertyWizard {
   }
 
   async getFieldError(field: string): Promise<string> {
-    const input = this.dialog.locator(`#${field}`);
-    const fieldWrapper = input.locator('..');
-    const error = fieldWrapper.locator('[data-slot="field-error"]');
+    const labelMap: Record<string, string> = { country: 'Pays' };
+    let errorLocator;
+
+    if (labelMap[field]) {
+      const group = this.dialog.locator('[role="group"]').filter({ hasText: labelMap[field] });
+      errorLocator = group.locator('[data-slot="field-error"]').first();
+    } else {
+      const input = this.dialog.locator(`#${field}, [name="${field}"]`).first();
+      errorLocator = input.locator('..').locator('[data-slot="field-error"]');
+    }
+
     try {
-      return (await error.textContent()) || '';
+      await errorLocator.waitFor({ state: 'visible', timeout: 3000 });
+      return (await errorLocator.textContent()) || '';
     } catch {
       return '';
     }
