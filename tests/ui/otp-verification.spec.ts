@@ -2,6 +2,7 @@ import { test, expect } from '@fixtures/test.fixture';
 import { MailTmHelper } from '@helpers/mail-tm.helper';
 
 test.describe('OTP Verification', () => {
+  test.slow();
   let tempMailInstance: MailTmHelper | null = null;
 
   test.afterEach(async () => {

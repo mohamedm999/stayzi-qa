@@ -15,7 +15,6 @@ export interface BookingRowData {
   guests: string;
   status: string;
   amount: string;
-  createdAt: string;
 }
 
 export interface GuestInfo {
@@ -122,22 +121,21 @@ export class BookingsPage extends BasePage {
     const row = this.tableRows.nth(index);
     const cells = row.locator('td');
     const cellCount = await cells.count();
-    if (cellCount < 11) return null;
+    if (cellCount < 10) return null;
 
     return {
       client: ((await cells.nth(0).textContent()) || '').trim(),
-      phone: ((await cells.nth(2).textContent()) || '').trim(),
-      checkIn: ((await cells.nth(3).textContent()) || '').trim(),
-      checkOut: ((await cells.nth(4).textContent()) || '').trim(),
-      guests: ((await cells.nth(5).textContent()) || '').trim(),
-      status: ((await cells.nth(6).textContent()) || '').trim(),
-      amount: ((await cells.nth(8).textContent()) || '').trim(),
-      createdAt: ((await cells.nth(9).textContent()) || '').trim(),
+      phone: ((await cells.nth(1).textContent()) || '').trim(),
+      checkIn: ((await cells.nth(2).textContent()) || '').trim(),
+      checkOut: ((await cells.nth(3).textContent()) || '').trim(),
+      guests: ((await cells.nth(4).textContent()) || '').trim(),
+      status: ((await cells.nth(5).textContent()) || '').trim(),
+      amount: ((await cells.nth(7).textContent()) || '').trim(),
     };
   }
 
   getStatusBadge(row: Locator): Locator {
-    return row.locator('td').nth(6).locator('[data-slot="badge"]');
+    return row.locator('td').nth(5);
   }
 
   async getRowActions(index: number): Promise<{ view: Locator; cancel: Locator; complete: Locator }> {

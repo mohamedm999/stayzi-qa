@@ -13,17 +13,18 @@ test.describe('Bookings Page — Table', () => {
     await bookingsPage.goto();
 
     const headers = await bookingsPage.getHeaderTexts();
-    expect(headers.length).toBeGreaterThanOrEqual(11);
+    expect(headers.length).toBe(10);
 
     expect(headers[0].toLowerCase()).toContain('client');
-    expect(headers[1].toLowerCase()).toContain('propriété');
-    expect(headers[2].toLowerCase()).toContain('téléphone');
-    expect(headers[3].toLowerCase()).toContain('check-in');
-    expect(headers[4].toLowerCase()).toContain('check-out');
-    expect(headers[5].toLowerCase()).toContain('pers');
-    expect(headers[6].toLowerCase()).toContain('statut');
-    expect(headers[7].toLowerCase()).toContain('fiche police');
-    expect(headers[8].toLowerCase()).toContain('montant');
+    expect(headers[1].toLowerCase()).toContain('téléphone');
+    expect(headers[2].toLowerCase()).toContain('check-in');
+    expect(headers[3].toLowerCase()).toContain('check-out');
+    expect(headers[4].toLowerCase()).toContain('pers');
+    expect(headers[5].toLowerCase()).toContain('statut');
+    expect(headers[6].toLowerCase()).toContain('fiche police');
+    expect(headers[7].toLowerCase()).toContain('montant');
+    expect(headers[8].toLowerCase()).toContain('qr code');
+    expect(headers[9].toLowerCase()).toContain('actions');
   });
 
   test('should display sync button with tooltip', async ({ bookingsPage }) => {
@@ -47,13 +48,13 @@ test.describe('Bookings Page — Table', () => {
     }
   });
 
-  test('should display rows with all 11 columns', async ({ bookingsPage }) => {
+  test('should display rows with all 10 columns', async ({ bookingsPage }) => {
     await bookingsPage.goto();
     const rowCount = await bookingsPage.getRowCount();
     if (rowCount > 0) {
       const firstRow = bookingsPage.tableRows.first();
       const cells = firstRow.locator('td');
-      expect(await cells.count()).toBeGreaterThanOrEqual(11);
+      expect(await cells.count()).toBe(10);
     }
   });
 
@@ -74,7 +75,7 @@ test.describe('Bookings Page — Table', () => {
     if (rowCount > 0) {
       const firstRow = bookingsPage.tableRows.first();
       const cells = firstRow.locator('td');
-      expect(await cells.count()).toBe(11);
+      expect(await cells.count()).toBe(10);
       // Actions column (last cell) should contain interactive elements
       const lastCell = cells.last();
       const innerHtml = await lastCell.innerHTML();
@@ -124,10 +125,10 @@ test.describe('Bookings Page — Table', () => {
     expect(bookingsPage.page.url()).toContain('/concierge/bookings');
   });
 
-  test('should have 11 table header columns', async ({ bookingsPage }) => {
+  test('should have 10 table header columns', async ({ bookingsPage }) => {
     await bookingsPage.goto();
     const headers = bookingsPage.tableHeaders;
-    expect(await headers.count()).toBe(11);
+    expect(await headers.count()).toBe(10);
   });
 
   test('guest count should be a positive number', async ({ bookingsPage }) => {
@@ -142,15 +143,12 @@ test.describe('Bookings Page — Table', () => {
     }
   });
 
-  test('createdAt date should be in readable format', async ({ bookingsPage }) => {
+  test('should display a QR-code cell for each booking row', async ({ bookingsPage }) => {
     await bookingsPage.goto();
     const rowCount = await bookingsPage.getRowCount();
-    for (let i = 0; i < rowCount; i++) {
-      const data = await bookingsPage.getRowData(i);
-      if (data && data.createdAt) {
-        // Format: "08 juil. 2026" or "dd/MM/yyyy"
-        expect(data.createdAt.length).toBeGreaterThan(3);
-      }
+    if (rowCount > 0) {
+      const qrCodeCell = bookingsPage.tableRows.first().locator('td').nth(8);
+      await expect(qrCodeCell).toBeVisible();
     }
   });
 });

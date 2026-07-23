@@ -66,6 +66,12 @@ interface Inbox {
   token: string;
 }
 
+class MailTmRateLimitError extends Error {
+  constructor(readonly retryAfterMs: number) {
+    super('mail.tm rate limit reached');
+  }
+}
+
 // ─── Configuration ──────────────────────────────────────────
 
 const BASE_URL = 'https://api.mail.tm';
@@ -249,6 +255,12 @@ export class MailTmHelper {
       });
 
       if (!response.ok()) {
+        if (response.status() === 429) {
+          const retryAfterSeconds = Number(response.headers()['retry-after']);
+          throw new MailTmRateLimitError(
+            Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0 ? retryAfterSeconds * 1000 : 10_000,
+          );
+        }
         const error = await response.text().catch(() => '');
         throw new Error(`Failed to create account ${address}: ${response.status()} ${error}`);
       }
@@ -274,7 +286,7 @@ export class MailTmHelper {
     }, `getToken(${address})`);
   }
 
-  private async withRetry<T>(fn: () => Promise<T>, label: string, attempts = 3): Promise<T> {
+  private async withRetry<T>(fn: () => Promise<T>, label: string, attempts = 5): Promise<T> {
     let lastError: Error | null = null;
     for (let i = 0; i < attempts; i++) {
       try {
@@ -283,7 +295,9 @@ export class MailTmHelper {
         lastError = err as Error;
         if (i < attempts - 1) {
           logger.warn(`${label} attempt ${i + 1} failed, retrying...`);
-          await this.sleep(1000 * (i + 1));
+          const backoffMs = 2_000 * (i + 1);
+          const retryAfterMs = err instanceof MailTmRateLimitError ? err.retryAfterMs : 0;
+          await this.sleep(Math.max(backoffMs, retryAfterMs));
         }
       }
     }

@@ -99,11 +99,11 @@ export class PoliceFormsPage extends BasePage {
     this.subtitle = page.locator('h1 + p, h1').locator('~ p').first();
     this.refreshBtn = page.getByRole('button', { name: 'Actualiser' });
 
-    // Summary cards — locate by label text inside card-header (avoid Recharts SVG text)
-    this.totalCard = page.locator('[data-slot="card-header"]').filter({ hasText: 'Total' }).first();
-    this.pendingCard = page.locator('[data-slot="card-header"]').filter({ hasText: 'En attente' }).first();
-    this.submittedCard = page.locator('[data-slot="card-header"]').filter({ hasText: 'Soumises' }).first();
-    this.noFormCard = page.locator('[data-slot="card-header"]').filter({ hasText: 'Non générées' }).first();
+    // Summary labels are paragraphs inside card containers; using their parent avoids matching chart text.
+    this.totalCard = page.locator('p').filter({ hasText: /^Total$/ }).locator('..');
+    this.pendingCard = page.locator('p').filter({ hasText: /^En attente$/ }).locator('..');
+    this.submittedCard = page.locator('p').filter({ hasText: /^Soumises$/ }).locator('..');
+    this.noFormCard = page.locator('p').filter({ hasText: /^Non générées$/ }).locator('..');
 
     // Charts
     this.submissionRateCard = page.getByText('Taux de soumission');
@@ -158,9 +158,7 @@ export class PoliceFormsPage extends BasePage {
   // ─── Summary Cards ─────────────────────────────────────────
 
   getStatValue(card: Locator): Locator {
-    return card.locator('.tabular-nums, [class*="text-2xl"], [class*="text-3xl"]').first().or(
-      card.locator('div, span').filter({ hasText: /^\d+$/ }).first()
-    );
+    return card.locator('div, span').filter({ hasText: /^\d+$/ }).first();
   }
 
   // ─── Table ─────────────────────────────────────────────────
