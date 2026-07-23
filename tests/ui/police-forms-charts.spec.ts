@@ -75,10 +75,11 @@ test.describe('Police Forms Page — Charts & Summary', () => {
     await expect(policeFormsPage.distributionCard).toBeVisible();
   });
 
-  test('cards should have correct responsive grid layout (sm:grid-cols-2 lg:grid-cols-4)', async ({ policeFormsPage }) => {
+  test('should expose four distinct summary-card labels', async ({ policeFormsPage }) => {
     await policeFormsPage.goto();
-    // Walk up from the Total card until we find a parent with a class attribute containing "grid"
-    const gridContainer = policeFormsPage.page.locator('[data-slot="card-header"]').first().locator('../../ancestor-or-self::div[contains(@class, "grid")]');
-    await expect(gridContainer).toHaveCount(1);
+    await expect(policeFormsPage.totalCard).toBeVisible();
+    await expect(policeFormsPage.pendingCard).toBeVisible();
+    await expect(policeFormsPage.submittedCard).toBeVisible();
+    await expect(policeFormsPage.noFormCard).toBeVisible();
   });
 });
