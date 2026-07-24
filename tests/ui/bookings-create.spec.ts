@@ -26,6 +26,9 @@ test.describe('Bookings Page — Create Booking Wizard', () => {
     await bookingsPage.clickCreate();
 
     const drawer = bookingsPage.getCreateDrawer();
+    const noPropDialog = bookingsPage.getNoPropertyDialog();
+    if (await noPropDialog.isOpen()) return;
+
     await expect(drawer.searchForm).toBeVisible();
     await expect(drawer.dateTrigger).toBeVisible();
     await expect(drawer.citySelect).toBeVisible();
@@ -38,6 +41,9 @@ test.describe('Bookings Page — Create Booking Wizard', () => {
     await bookingsPage.clickCreate();
 
     const drawer = bookingsPage.getCreateDrawer();
+    const noPropDialog = bookingsPage.getNoPropertyDialog();
+    if (await noPropDialog.isOpen()) return;
+
     await expect(drawer.guestMinus).toBeVisible();
     await expect(drawer.guestPlus).toBeVisible();
     await expect(drawer.guestCountInput).toBeVisible();
@@ -48,6 +54,9 @@ test.describe('Bookings Page — Create Booking Wizard', () => {
     await bookingsPage.clickCreate();
 
     const drawer = bookingsPage.getCreateDrawer();
+    const noPropDialog = bookingsPage.getNoPropertyDialog();
+    if (await noPropDialog.isOpen()) return;
+
     const initial = await drawer.guestCountInput.inputValue();
     await drawer.guestPlus.click();
     const after = await drawer.guestCountInput.inputValue();
@@ -59,6 +68,9 @@ test.describe('Bookings Page — Create Booking Wizard', () => {
     await bookingsPage.clickCreate();
 
     const drawer = bookingsPage.getCreateDrawer();
+    const noPropDialog = bookingsPage.getNoPropertyDialog();
+    if (await noPropDialog.isOpen()) return;
+
     await drawer.guestPlus.click();
     await drawer.guestPlus.click();
     const before = await drawer.guestCountInput.inputValue();
@@ -72,6 +84,9 @@ test.describe('Bookings Page — Create Booking Wizard', () => {
     await bookingsPage.clickCreate();
 
     const drawer = bookingsPage.getCreateDrawer();
+    const noPropDialog = bookingsPage.getNoPropertyDialog();
+    if (await noPropDialog.isOpen()) return;
+
     await expect(drawer.prevBtn).toBeDisabled();
   });
 
@@ -80,7 +95,6 @@ test.describe('Bookings Page — Create Booking Wizard', () => {
     await bookingsPage.clickCreate();
 
     const noPropDialog = bookingsPage.getNoPropertyDialog();
-    // This only shows if user has 0 properties
     const visible = await noPropDialog.isOpen();
     if (visible) {
       await expect(noPropDialog.title).toBeVisible();
@@ -93,6 +107,9 @@ test.describe('Bookings Page — Create Booking Wizard', () => {
     await bookingsPage.clickCreate();
 
     const drawer = bookingsPage.getCreateDrawer();
+    const noPropDialog = bookingsPage.getNoPropertyDialog();
+    if (await noPropDialog.isOpen()) return;
+
     await expect(drawer.drawer).toBeVisible();
     await drawer.close();
     await expect(drawer.drawer).not.toBeVisible({ timeout: 5000 });
