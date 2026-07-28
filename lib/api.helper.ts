@@ -1,6 +1,6 @@
 import { APIRequestContext, APIResponse } from '@playwright/test';
-import { logger } from '@utils/logger';
-import { config } from '@utils/config';
+import { logger } from '@lib/logger';
+import { config } from '@lib/config';
 
 interface RequestOptions {
   headers?: Record<string, string>;

@@ -18,20 +18,17 @@
     "baseUrl": ".",
     "paths": {
       "@pages/*": ["pages/*"],
-      "@components/*": ["components/*"],
-      "@helpers/*": ["helpers/*"],
+      "@fragments/*": ["fragments/*"],
+      "@lib/*": ["lib/*"],
       "@fixtures/*": ["fixtures/*"],
-      "@utils/*": ["utils/*"],
-      "@data/*": ["data/*"],
       "@hooks/*": ["hooks/*"]
     }
   },
   "include": [
     "pages/**/*.ts",
-    "components/**/*.ts",
-    "helpers/**/*.ts",
+    "fragments/**/*.ts",
+    "lib/**/*.ts",
     "fixtures/**/*.ts",
-    "utils/**/*.ts",
     "hooks/**/*.ts",
     "tests/**/*.ts",
     "playwright.config.ts"

@@ -1,6 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './base.page';
-import { logger } from '@utils/logger';
+import { logger } from '@lib/logger';
 
 type Period = '1 mois' | '3 mois' | '6 mois' | '1 an';
 

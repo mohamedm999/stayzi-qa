@@ -1,5 +1,5 @@
 import { test, expect } from '@fixtures/test.fixture';
-import { DataGenerator } from '@helpers/data.generator';
+import { DataGenerator } from '@lib/data.generator';
 
 test.describe('Properties Page', () => {
   test.use({ storageState: '.auth/user.json' });

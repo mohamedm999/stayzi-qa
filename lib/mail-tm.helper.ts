@@ -1,5 +1,5 @@
 import { APIRequestContext } from '@playwright/test';
-import { logger } from '@utils/logger';
+import { logger } from '@lib/logger';
 
 // ─── Interfaces ─────────────────────────────────────────────
 

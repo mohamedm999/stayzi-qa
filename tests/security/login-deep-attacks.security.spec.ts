@@ -1,5 +1,5 @@
 import { test, expect, APIRequestContext } from '@playwright/test';
-import { config } from '@utils/config';
+import { config } from '@lib/config';
 
 const API = config.apiUrl;
 const BASE = config.devBaseUrl;

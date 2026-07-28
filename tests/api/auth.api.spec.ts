@@ -1,5 +1,5 @@
 import { test, expect } from '@fixtures/test.fixture';
-import { config } from '@utils/config';
+import { config } from '@lib/config';
 
 test.describe('Auth API — Login', () => {
   test('@smoke @api should return 400 with validation errors for empty body', async ({ apiHelper }) => {

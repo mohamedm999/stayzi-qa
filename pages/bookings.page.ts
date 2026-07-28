@@ -1,6 +1,6 @@
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './base.page';
-import { logger } from '@utils/logger';
+import { logger } from '@lib/logger';
 
 export type BookingStatus = 'INCOMPLETE' | 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
 export type BookingSource = 'AIRBNB' | 'BOOKING' | 'SPEECH' | 'FACEBOOK' | 'INSTAGRAM' | 'TIKTOK';

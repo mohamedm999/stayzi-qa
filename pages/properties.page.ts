@@ -1,6 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './base.page';
-import { logger } from '@utils/logger';
+import { logger } from '@lib/logger';
 
 export type PropertyType = 'APARTMENT' | 'VILLA';
 export type WizardMode = 'manual' | 'link';

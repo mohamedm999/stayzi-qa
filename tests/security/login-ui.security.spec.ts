@@ -1,6 +1,6 @@
 import { test, expect } from '@fixtures/test.fixture';
-import { config } from '@utils/config';
-import { XSS_PAYLOADS } from '@data/security-payloads';
+import { config } from '@lib/config';
+import { XSS_PAYLOADS } from '@lib/security-payloads';
 
 test.describe('Login UI Security', () => {
 

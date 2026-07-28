@@ -1,5 +1,5 @@
 import { test, expect } from '@fixtures/test.fixture';
-import { MailTmHelper } from '@helpers/mail-tm.helper';
+import { MailTmHelper } from '@lib/mail-tm.helper';
 
 test.describe('OTP Verification', () => {
   test.slow();
