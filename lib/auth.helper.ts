@@ -1,7 +1,7 @@
 import { Page, APIRequestContext } from '@playwright/test';
-import { ApiHelper } from '@helpers/api.helper';
-import { config } from '@utils/config';
-import { logger } from '@utils/logger';
+import { ApiHelper } from '@lib/api.helper';
+import { config } from '@lib/config';
+import { logger } from '@lib/logger';
 
 interface LoginData {
   accessToken?: string;

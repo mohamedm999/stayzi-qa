@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { logger } from '@utils/logger';
+import { logger } from '@lib/logger';
 
 export type NavItemName =
   | 'Dashboard'

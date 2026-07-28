@@ -1,6 +1,6 @@
 import { Page, Locator } from '@playwright/test';
-import { WaitHelper } from '@utils/wait.helper';
-import { logger } from '@utils/logger';
+import { WaitHelper } from '@lib/wait.helper';
+import { logger } from '@lib/logger';
 
 export class BasePage {
   readonly page: Page;

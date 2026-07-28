@@ -1,6 +1,6 @@
 import { test, expect } from '@fixtures/test.fixture';
-import { TimingHelper } from '@helpers/timing.helper';
-import { config } from '@utils/config';
+import { TimingHelper } from '@lib/timing.helper';
+import { config } from '@lib/config';
 import {
   SQL_INJECTION_PAYLOADS,
   NOSQL_INJECTION_PAYLOADS,
@@ -16,7 +16,7 @@ import {
   BRUTE_FORCE_PASSWORDS,
   CONTENT_TYPE_MISMATCHES,
   MALICIOUS_TOKENS,
-} from '@data/security-payloads';
+} from '@lib/security-payloads';
 
 const LOGIN_ENDPOINT = '/auth/login';
 const ME_ENDPOINT = '/auth/me';

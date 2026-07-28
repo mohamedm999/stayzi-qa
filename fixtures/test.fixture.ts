@@ -7,12 +7,12 @@ import { PropertiesPage } from '@pages/properties.page';
 import { BookingsPage } from '@pages/bookings.page';
 import { PoliceFormsPage } from '@pages/police-forms.page';
 import { VerifyOtpPage } from '@pages/verify-otp.page';
-import { MailTmHelper } from '@helpers/mail-tm.helper';
-import { ApiHelper } from '@helpers/api.helper';
-import { AuthHelper } from '@helpers/auth.helper';
-import { DataGenerator } from '@helpers/data.generator';
-import { SidebarComponent } from '@components/sidebar.component';
-import { HeaderComponent } from '@components/header.component';
+import { MailTmHelper } from '@lib/mail-tm.helper';
+import { ApiHelper } from '@lib/api.helper';
+import { AuthHelper } from '@lib/auth.helper';
+import { DataGenerator } from '@lib/data.generator';
+import { SidebarComponent } from '@fragments/sidebar.component';
+import { HeaderComponent } from '@fragments/header.component';
 
 interface TestFixtures {
   loginPage: LoginPage;

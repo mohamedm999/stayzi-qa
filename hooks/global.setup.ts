@@ -1,7 +1,7 @@
 import { FullConfig, chromium } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
-import { logger } from '../utils/logger';
+import { logger } from '../lib/logger';
 
 async function globalSetup(config: FullConfig) {
   const apiUrl = process.env.API_URL || 'https://api-dev.stayzi.app/api/v1';
