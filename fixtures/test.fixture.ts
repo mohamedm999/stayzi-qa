@@ -7,6 +7,7 @@ import { PropertiesPage } from '@pages/properties.page';
 import { BookingsPage } from '@pages/bookings.page';
 import { PoliceFormsPage } from '@pages/police-forms.page';
 import { VerifyOtpPage } from '@pages/verify-otp.page';
+import { CollaboratorsPage } from '@pages/collaborators.page';
 import { MailTmHelper } from '@lib/mail-tm.helper';
 import { ApiHelper } from '@lib/api.helper';
 import { AuthHelper } from '@lib/auth.helper';
@@ -29,6 +30,7 @@ interface TestFixtures {
   dataGenerator: typeof DataGenerator;
   verifyOtpPage: VerifyOtpPage;
   tempMail: MailTmHelper;
+  collaboratorsPage: CollaboratorsPage;
 }
 
 export const test = base.extend<TestFixtures>({
@@ -99,6 +101,11 @@ export const test = base.extend<TestFixtures>({
   tempMail: async ({ request }, use) => {
     const tempMail = new MailTmHelper(request);
     await use(tempMail);
+  },
+
+  collaboratorsPage: async ({ page }, use) => {
+    const collaboratorsPage = new CollaboratorsPage(page);
+    await use(collaboratorsPage);
   },
 });
 
