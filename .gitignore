@@ -9,6 +9,9 @@ node_modules/
 # Auth state
 .auth/
 
+# Generated codebase overview (regenerated from source)
+CODEBASE.md
+
 # Test output
 test-results/
 allure-results/

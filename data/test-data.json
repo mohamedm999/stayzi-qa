@@ -10,10 +10,10 @@
   },
   "users": {
     "admin": {
-      "email": "ahmed.benjelloun@conciergerie-marrakech.ma",
-      "password": "Admin@Marrakech2024!",
-      "firstName": "Ahmed",
-      "lastName": "Benjelloun",
+      "email": "admin@example.com",
+      "password": "CHANGE_ME_USE_ENV_VAR",
+      "firstName": "Admin",
+      "lastName": "User",
       "role": "ADMIN_CONCIERGERIE"
     }
   },
