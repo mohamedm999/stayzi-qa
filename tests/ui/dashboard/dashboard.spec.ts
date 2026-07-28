@@ -26,7 +26,7 @@ test.describe('Dashboard Page', () => {
     await expect(dashboardPage.period1an).toBeVisible();
   });
 
-  test('@smoke should display reservations table with 9 columns', async ({ dashboardPage }) => {
+  test('@smoke should display reservations table with 10 columns', async ({ dashboardPage }) => {
     await dashboardPage.gotoDashboard();
     await expect(dashboardPage.tableTitle).toBeVisible();
     await expect(dashboardPage.table).toBeVisible();
@@ -38,6 +38,7 @@ test.describe('Dashboard Page', () => {
     expect(headers).toContain('Check-out');
     expect(headers).toContain('Pers.');
     expect(headers).toContain('Statut');
+    expect(headers).toContain('Fiche police');
     expect(headers).toContain('Montant');
     expect(headers).toContain('QR Code');
     expect(headers).toContain('Actions');

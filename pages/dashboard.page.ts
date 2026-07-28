@@ -11,6 +11,7 @@ type RowData = {
   checkout: string;
   persons: string;
   status: string;
+  fichePolice: string;
   amount: string;
 };
 
@@ -37,9 +38,7 @@ export class DashboardPage extends BasePage {
   readonly tableRows: Locator;
   readonly reservationCount: Locator;
 
-  readonly emptyChartState: Locator;
 
-  readonly todayPanel: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -66,9 +65,7 @@ export class DashboardPage extends BasePage {
     this.tableRows = page.locator('tbody tr');
     this.reservationCount = page.getByText(/\d+\s*réservation/);
 
-    this.emptyChartState = page.getByText('Aucune donnée');
 
-    this.todayPanel = page.getByText('Aujourd\'hui').locator('..');
   }
 
   async gotoDashboard(): Promise<void> {
@@ -125,7 +122,7 @@ export class DashboardPage extends BasePage {
 
     const cells = rows.nth(index).locator('td');
     const cellCount = await cells.count();
-    if (cellCount < 7) return null;
+    if (cellCount < 8) return null;
 
     const client = ((await cells.nth(0).textContent()) || '').trim();
     if (!client && (await cells.nth(1).textContent())?.trim() === '') return null;
@@ -137,7 +134,8 @@ export class DashboardPage extends BasePage {
       checkout: ((await cells.nth(3).textContent()) || '').trim(),
       persons: ((await cells.nth(4).textContent()) || '').trim(),
       status: ((await cells.nth(5).textContent()) || '').trim(),
-      amount: ((await cells.nth(6).textContent()) || '').trim(),
+      fichePolice: ((await cells.nth(6).textContent()) || '').trim(),
+      amount: ((await cells.nth(7).textContent()) || '').trim(),
     };
   }
 
@@ -160,11 +158,5 @@ export class DashboardPage extends BasePage {
     return this.tableHeaders.allTextContents();
   }
 
-  async isChartEmpty(): Promise<boolean> {
-    try {
-      return await this.emptyChartState.isVisible({ timeout: 2000 });
-    } catch {
-      return false;
-    }
-  }
+
 }
