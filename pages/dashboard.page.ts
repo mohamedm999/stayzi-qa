@@ -1,6 +1,8 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './base.page';
 import { logger } from '@lib/logger';
+import { CreateBookingDrawer, NoPropertyDialog } from './bookings.page';
+import { CreatePropertyData, PropertyWizard } from './properties.page';
 
 type Period = '1 mois' | '3 mois' | '6 mois' | '1 an';
 
@@ -23,6 +25,7 @@ export class DashboardPage extends BasePage {
 
   readonly addPropertyBtn: Locator;
   readonly createReservationBtn: Locator;
+  readonly activityBtn: Locator;
 
   readonly chartSection: Locator;
   readonly chartTitle: Locator;
@@ -50,6 +53,9 @@ export class DashboardPage extends BasePage {
 
     this.addPropertyBtn = page.getByRole('button', { name: /Ajouter un bien/i });
     this.createReservationBtn = page.getByRole('button', { name: /Créer réservation|Nouvelle réservation/i });
+
+    // Opens the "Aujourd'hui" (today's activity / pending tasks) slide-over.
+    this.activityBtn = page.getByRole('button', { name: "Ouvrir l'activité du jour" });
 
     this.chartSection = page.getByText('Réservations par mois').locator('..');
     this.chartTitle = page.getByText('Réservations par mois');
@@ -95,6 +101,73 @@ export class DashboardPage extends BasePage {
   async clickCreateReservation(): Promise<void> {
     logger.step('Clicking Créer réservation');
     await this.createReservationBtn.click();
+  }
+
+  /**
+   * Get the "New Reservation" wizard drawer opened from the dashboard header.
+   * Call clickCreateReservation() first.
+   */
+  getCreateReservationDrawer(): CreateBookingDrawer {
+    return new CreateBookingDrawer(this.page);
+  }
+
+  /**
+   * Open the "Add Property" wizard from the dashboard header and wait for it.
+   */
+  async openPropertyWizard(): Promise<PropertyWizard> {
+    await this.clickAddProperty();
+    const wizard = new PropertyWizard(this.page);
+    await wizard.dialog.waitFor({ state: 'visible', timeout: 10000 });
+    return wizard;
+  }
+
+  /**
+   * Get the "no property available" alert shown when a guest has no properties.
+   */
+  getNoPropertyDialog(): NoPropertyDialog {
+    return new NoPropertyDialog(this.page);
+  }
+
+  /**
+   * Create a property end-to-end via the manual wizard and return whether
+   * the success screen was reached. The wizard is closed on success.
+   * Pass `photoPath` to also upload an image before submitting.
+   */
+  async createProperty(data: CreatePropertyData, photoPath?: string): Promise<boolean> {
+    logger.step(`Creating property: ${data.name}`);
+    const wizard = await this.openPropertyWizard();
+    await wizard.selectMode('manual');
+    await wizard.nextStep();
+    await wizard.fillForm(data);
+    if (photoPath) {
+      await wizard.uploadPhotos(photoPath);
+    }
+    await wizard.submitForm();
+
+    const success = await wizard.dialog
+      .getByText('Bien ajouté avec succès !')
+      .waitFor({ state: 'visible', timeout: 15000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (success) {
+      logger.success(`Property created: ${data.name}`);
+      await wizard.clickFermer();
+    }
+    return success;
+  }
+
+  /**
+   * Open the "À traiter" (today's activity / pending tasks) slide-over.
+   * The KPI card itself is not interactive; it is opened via the
+   * "Ouvrir l'activité du jour" button next to the header actions.
+   */
+  async openTodayActivity(): Promise<ActivityDrawer> {
+    logger.step('Opening today activity slide-over');
+    await this.activityBtn.click();
+    const drawer = new ActivityDrawer(this.page);
+    await drawer.drawer.waitFor({ state: 'visible', timeout: 5000 });
+    return drawer;
   }
 
   async selectPeriod(period: Period): Promise<void> {
@@ -157,6 +230,67 @@ export class DashboardPage extends BasePage {
   async getHeaderTexts(): Promise<string[]> {
     return this.tableHeaders.allTextContents();
   }
+}
 
+// ─── Today's Activity Slide-over (Aujourd'hui / À traiter) ─────────
 
+export class ActivityDrawer {
+  readonly drawer: Locator;
+  readonly title: Locator;
+  readonly badge: Locator;
+  readonly closeBtn: Locator;
+
+  readonly checkinsSection: Locator;
+  readonly alertesSection: Locator;
+  readonly checkoutsSection: Locator;
+
+  readonly items: Locator;
+
+  constructor(private page: Page) {
+    // Right-side vaul drawer opened via "Ouvrir l'activité du jour".
+    // Filtered on the "Aujourd'hui" title so it does not collide with the
+    // booking/clients drawers (which also render as right-side vaul drawers).
+    this.drawer = page
+      .locator('[data-vaul-drawer-direction="right"]')
+      .filter({ hasText: "Aujourd'hui" })
+      .last();
+
+    this.title = this.drawer.locator('[data-slot="drawer-title"]');
+    this.badge = this.drawer.locator('[data-slot="badge"]');
+    this.closeBtn = this.drawer.getByRole('button', { name: 'Fermer' });
+
+    this.checkinsSection = this.drawer.getByText(/Check-ins/);
+    this.alertesSection = this.drawer.getByText('Alertes');
+    this.checkoutsSection = this.drawer.getByText(/Check-outs/);
+
+    // Each pending task renders as a bordered card inside a section.
+    this.items = this.drawer.locator('div.rounded-lg.border.bg-card');
+  }
+
+  async isOpen(): Promise<boolean> {
+    try {
+      return await this.drawer.isVisible({ timeout: 2000 });
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Number of activity cards rendered across all sections.
+   */
+  async getItemCount(): Promise<number> {
+    return this.items.count();
+  }
+
+  /**
+   * Text of every activity card (e.g. "14:00 Riad Azura Marc-Antoine Girard").
+   */
+  async getItemTitles(): Promise<string[]> {
+    return this.items.allTextContents();
+  }
+
+  async close(): Promise<void> {
+    logger.step('Closing today activity slide-over');
+    await this.closeBtn.click();
+  }
 }

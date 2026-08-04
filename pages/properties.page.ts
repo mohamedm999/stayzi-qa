@@ -93,12 +93,14 @@ export class PropertyWizard {
     this.title = this.dialog.locator('[data-slot="drawer-title"]');
     this.closeBtn = this.dialog.getByRole('button', { name: 'Fermer' });
 
+    // Radix stepper renders only the ACTIVE step content in the DOM, so
+    // nth-indexing is unreliable — the visible panel is the only one.
+    this.step1Panel = this.dialog.locator('[data-slot="stepper-content"]').first();
     this.stepper = this.dialog.locator('[data-slot="stepper-nav"]');
     this.stepperItems = this.dialog.locator('[data-slot="stepper-indicator"]');
 
-    this.step1Panel = this.dialog.locator('[data-slot="stepper-content"]').nth(0);
-    this.step2Panel = this.dialog.locator('[data-slot="stepper-content"]').nth(1);
-    this.step3Panel = this.dialog.locator('[data-slot="stepper-content"]').nth(2);
+    this.step2Panel = this.dialog.locator('[data-slot="stepper-content"]').first();
+    this.step3Panel = this.dialog.locator('[data-slot="stepper-content"]').first();
 
     this.prevBtn = this.dialog.getByRole('button', { name: 'Précédent' });
     this.nextBtn = this.dialog.getByRole('button', { name: 'Suivant' });
@@ -238,12 +240,19 @@ export class PropertyWizard {
   // ─── Step 3: Success ─────────────────────────────────────────
 
   async getSuccessMessage(): Promise<string> {
-    const msg = this.step3Panel.getByText('Bien ajouté avec succès !');
+    const msg = this.dialog.getByText('Bien ajouté avec succès !');
     return (await msg.textContent()) || '';
+  }
+
+  async uploadPhotos(path: string): Promise<void> {
+    logger.step(`Uploading photo: ${path}`);
+    await this.dialog.locator('input[type="file"]').first().setInputFiles(path);
   }
 
   async clickFermer(): Promise<void> {
     logger.step('Closing wizard');
-    await this.step3Panel.getByRole('button', { name: 'Fermer' }).click();
+    // The success screen renders outside the stepper panel; the "Fermer"
+    // button is the last one in the dialog (the header close is first).
+    await this.dialog.getByRole('button', { name: 'Fermer' }).last().click();
   }
 }

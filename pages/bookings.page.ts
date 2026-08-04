@@ -263,11 +263,11 @@ export class CreateBookingDrawer {
     this.firstNameInput = this.drawer.locator('input[name="firstName"]');
     this.lastNameInput = this.drawer.locator('input[name="lastName"]');
     this.emailInput = this.drawer.locator('input[name="email"]');
-    this.phoneInput = this.drawer.locator('input[name="phone"]');
-    this.countryInput = this.drawer.locator('input[name="country"]');
+    this.phoneInput = this.drawer.locator('#phone, input[name="phone"]');
+    this.countryInput = this.drawer.locator('input[placeholder*="Sélectionner un pays"], input[name="country"]');
     this.languageSelect = this.drawer.locator('select[name="guestLanguage"], #guestLanguage');
     this.bookingSourceSelect = this.drawer.locator('select[name="bookingSource"], #bookingSource');
-    this.advancePaymentInput = this.drawer.locator('input[name="advancePaymentAmount"]');
+    this.advancePaymentInput = this.drawer.locator('#advancePaymentAmount, input[name="advancePaymentAmount"]');
 
     // Step 4
     this.successTitle = this.drawer.getByText('Réservation confirmée !');
@@ -301,7 +301,15 @@ export class CreateBookingDrawer {
 
   async confirm(): Promise<void> {
     logger.step('Confirming booking creation');
-    await this.confirmBtn.click();
+    // Step 3 validates with "Vérifier"; a review step then confirms the stay.
+    const verifyBtn = this.drawer.getByRole('button', { name: 'Vérifier' });
+    if (await verifyBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await verifyBtn.click();
+    }
+    const confirmBtn = this.drawer.getByRole('button', { name: 'Confirmer la réservation' });
+    if (await confirmBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await confirmBtn.click();
+    }
   }
 
   async close(): Promise<void> {
@@ -374,10 +382,31 @@ export class CreateBookingDrawer {
     await this.lastNameInput.fill(guest.lastName);
     if (guest.email) await this.emailInput.fill(guest.email);
     await this.phoneInput.fill(guest.phone);
-    await this.countryInput.fill(guest.country);
-    if (guest.guestCount) {
-      // Guest count is set via the guest count input
-    }
+    if (guest.country) await this.selectCountry(guest.country);
+    await this.selectLanguage(guest.guestLanguage || 'Français');
+  }
+
+  /**
+   * Type a country into the combobox and select the suggested option.
+   * Typing alone does not register a value — the option must be clicked.
+   */
+  async selectCountry(country: string): Promise<void> {
+    logger.step(`Selecting country: ${country}`);
+    await this.countryInput.fill(country);
+    const suggestion = this.page
+      .getByRole('button', { name: new RegExp(country, 'i') })
+      .filter({ hasText: country })
+      .first();
+    await suggestion.click();
+  }
+
+  /**
+   * Open the language select and choose an option (e.g. "Français").
+   */
+  async selectLanguage(language: string): Promise<void> {
+    logger.step(`Selecting language: ${language}`);
+    await this.languageSelect.click();
+    await this.page.getByRole('option', { name: language }).click();
   }
 
   async getFieldError(fieldName: string): Promise<string> {
